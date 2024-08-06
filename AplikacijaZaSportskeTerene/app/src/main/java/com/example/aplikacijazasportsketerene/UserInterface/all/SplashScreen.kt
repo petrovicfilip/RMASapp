@@ -1,5 +1,5 @@
 
-package com.example.aplikacijazasportsketerene.UserInterface.splash
+package com.example.aplikacijazasportsketerene.UserInterface.all
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

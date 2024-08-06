@@ -84,7 +84,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(17.dp))
             OutlinedTextField(
                 value = lastName,
                 onValueChange = {
@@ -99,7 +99,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(17.dp))
             OutlinedTextField(
                 value = username,
                 onValueChange = {
@@ -114,7 +114,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(17.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = {
@@ -129,7 +129,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(17.dp))
             OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = {
@@ -144,7 +144,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(35.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -173,7 +173,7 @@ fun SignUpScreen(
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(17.dp))
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = {
@@ -206,7 +206,7 @@ fun SignUpScreen(
             Button(
                 onClick = { signUpViewModel.onSignUpClick { navController.popBackStack(Screen.SignIn.name, inclusive = true) } },
                 modifier = Modifier
-                    .height(40.dp)
+                    .height(60.dp)
                     .fillMaxWidth()
             ) {
                 Text("Napravite nalog")

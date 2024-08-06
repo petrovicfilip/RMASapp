@@ -1,4 +1,4 @@
-package com.example.aplikacijazasportsketerene.UserInterface.splash
+package com.example.aplikacijazasportsketerene.UserInterface.all
 
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController

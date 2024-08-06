@@ -1,25 +1,35 @@
 package com.example.aplikacijazasportsketerene
 
+import NavigationBar
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.aplikacijazasportsketerene.Location.LocationService
+import com.example.aplikacijazasportsketerene.Services.PermissionService
 import com.example.aplikacijazasportsketerene.UserInterface.signup.SignUpScreen
-import com.example.aplikacijazasportsketerene.UserInterface.splash.HomePage
-import com.example.aplikacijazasportsketerene.UserInterface.splash.SplashScreen
-import com.example.aplikacijazasportsketerene.UserInterface.splash.LogInScreen
+import com.example.aplikacijazasportsketerene.UserInterface.all.HomePage
+import com.example.aplikacijazasportsketerene.UserInterface.all.SplashScreen
+import com.example.aplikacijazasportsketerene.UserInterface.all.LogInScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -27,7 +37,20 @@ class MainActivity : ComponentActivity() {
             AplikacijaZaSportskeTereneTheme {
                 //SplashScreen(navController = rememberNavController())
                 NavigationInitialization(context = this)
+                PermissionService(activity = this).getLocationPermissions()
+                Intent(applicationContext, LocationService::class.java).apply {
+                    action = LocationService.ACTION_START
+                    startService(this)
+                }
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Intent(applicationContext, LocationService::class.java).apply {
+            action = LocationService.ACTION_STOP
+            startService(this)
         }
     }
 
@@ -35,6 +58,28 @@ class MainActivity : ComponentActivity() {
     private fun NavigationInitialization(context: Context) {
 
         val navController = rememberNavController()
+        val navigationBar = NavigationBar(
+            navigateToSearchingPage = {
+                navController.popBackStack(Screen.Search.name, inclusive = true)
+                navController.navigate(Screen.Search.name)
+            },
+            navigateToPlayersPage = {
+                navController.popBackStack(Screen.Players.name, inclusive = true)
+                navController.navigate(Screen.Players.name)
+            },
+            navigateToProfilePage = {
+                navController.popBackStack(Screen.Profile.name, inclusive = true)
+                navController.navigate(Screen.Profile.name)
+            },
+            navigateToHomePage = {
+                navController.popBackStack(Screen.Home.name, inclusive = true)
+                navController.navigate(Screen.Home.name)
+            },
+            navigateToLikedCourtsPage = {
+                navController.popBackStack(Screen.Courts.name, inclusive = true)
+                navController.navigate(Screen.Courts.name)
+            }
+        )
 
         Box(modifier = Modifier.fillMaxSize()) {
             Surface(modifier = Modifier.fillMaxSize()) {
@@ -49,17 +94,87 @@ class MainActivity : ComponentActivity() {
                         SplashScreen(navController = navController)
                     }
                     composable(Screen.Home.name) {
-                        HomePage(navController = navController)
+                        HomePage(
+                            navController = navController,
+                            applicationContext = applicationContext,
+                            navigationBar = navigationBar
+                        )
+                    }
+                    composable(Screen.Search.name) {
+                        SearchPage(
+                            navController = navController,
+                            context = applicationContext,
+                            navigationBar = navigationBar
+                        )
+                    }
+                    composable(Screen.Courts.name) {
+                        CourtsPage(
+                            navController = navController,
+                            context = applicationContext,
+                            navigationBar = navigationBar
+                        )
+                    }
+                    composable(Screen.Profile.name) {
+                        ProfilePage(
+                            navController = navController,
+                            context = applicationContext,
+                            navigationBar = navigationBar
+                        )
+                    }
+                    composable(Screen.Players.name) {
+                        PlayersPage(
+                            navController = navController,
+                            context = applicationContext,
+                            navigationBar = navigationBar
+                        )
                     }
                 }
             }
         }
     }
-}
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    private
+    @Composable
+    fun PlayersPage(navController: NavController, context: Context?, navigationBar: NavigationBar) {
+        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Players.name) }) {
+        }
+    }
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    private
+    @Composable
+    fun ProfilePage(navController: NavController, context: Context?, navigationBar: NavigationBar) {
+        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Profile.name) }) {
+        }
+    }
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    private
+    @Composable
+    fun CourtsPage(navController: NavController, context: Context?, navigationBar: NavigationBar) {
+        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Courts.name) }) {
+        }
+    }
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    @Composable
+    private fun SearchPage(
+        navController: NavController,
+        context: Context?,
+        navigationBar: NavigationBar
+    ) {
+        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Search.name) }) {
+        }
+    }
+}
 enum class Screen {
     LogIn,
     SignIn,
     Splash,
-    Home
+    Home,
+    Search,
+    Courts,
+    Profile,
+    Players
 }

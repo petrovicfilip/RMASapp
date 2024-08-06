@@ -33,7 +33,7 @@ class SignUpViewModel private constructor(
     val phoneNumber = MutableStateFlow("")
     val passwordVisible = MutableStateFlow(false)
     val confirmPasswordVisible = MutableStateFlow(false)
-    val appContext = context
+    private val appContext = context
 
     fun updateFirstName(newFirstName: String) {
         firstName.value = newFirstName

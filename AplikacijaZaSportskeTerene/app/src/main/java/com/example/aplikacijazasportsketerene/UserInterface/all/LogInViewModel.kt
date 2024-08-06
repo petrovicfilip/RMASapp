@@ -1,18 +1,14 @@
-package com.example.aplikacijazasportsketerene.UserInterface.splash
+package com.example.aplikacijazasportsketerene.UserInterface.all
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.AccountService
-import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class LogInViewModel private constructor(
     // ...
