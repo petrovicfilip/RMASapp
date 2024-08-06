@@ -31,3 +31,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Ignore secrets and local defaults
+secrets.properties
+local.defaults.properties
