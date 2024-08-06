@@ -15,18 +15,27 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.MainActivity
 import com.example.aplikacijazasportsketerene.Screen
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -36,6 +45,14 @@ fun HomePage(
     navigationBar: NavigationBar){
     Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Home.name) })
     {
+        val locationUpdates = LocationService.locationUpdates.collectAsState()
+
+        val currentLocation = locationUpdates.value
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(
+                LatLng(currentLocation?.latitude ?: 0.0, currentLocation?.longitude ?: 0.0), 15f
+            )
+        }
         Column() {
             Row(
                 horizontalArrangement = Arrangement.Center, modifier = Modifier
@@ -70,6 +87,19 @@ fun HomePage(
                         )
                 ) {
                     Text(text = "Odjavi se!")
+                }
+            }
+            GoogleMap(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp),
+                cameraPositionState = cameraPositionState
+            ) {
+                currentLocation?.let {
+                    Marker(
+                        state = MarkerState(position = LatLng(it.latitude, it.longitude)),
+                        title = "Vaša trenutna lokacija"
+                    )
                 }
             }
         }
