@@ -3,6 +3,7 @@ package com.example.aplikacijazasportsketerene.UserInterface.all
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.DatastoreService
@@ -22,9 +23,9 @@ class ProfileViewModel private constructor(): ViewModel() {
         }
     }
 
-    val profilePicture by mutableStateOf<Uri?>(null)
+    var profilePicture by mutableStateOf<Uri?>(null)
 
-    fun getProfilePicture(){
+    fun getUserProfilePicture(){
         viewModelScope.launch {
             DatastoreService.getClassInstance().downloadProfilePicture(Firebase.auth.currentUser!!.uid)
         }

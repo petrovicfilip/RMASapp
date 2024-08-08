@@ -1,6 +1,7 @@
 package com.example.aplikacijazasportsketerene.Services
 
 import android.net.Uri
+import com.example.aplikacijazasportsketerene.UserInterface.all.ProfileViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import com.google.firebase.storage.storageMetadata
@@ -36,8 +37,7 @@ class DatastoreService private constructor() {
 
         img.downloadUrl
             .addOnSuccessListener {
-                /// staviti sliku u view Model
-
+                ProfileViewModel.getClassInstance().profilePicture = it
             }
     }
 

@@ -8,7 +8,9 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +25,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -37,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -84,14 +89,27 @@ fun SignUpScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(24.dp))
             Image(
-                painter = painterResource(id = R.drawable.baseline_sports_basketball_24),
+                painter = painterResource(id = R.mipmap.img2),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .size(128.dp)
-                    .padding(bottom = 32.dp)
-                    .padding(top = 15.dp)
+                    .size(68.dp)
+                    .clip(CircleShape)
+                    //.padding(bottom = 26.dp)
+                    //.padding(top = 15.dp)
+                    .border(
+                        border = BorderStroke(3.dp, Color.Cyan),
+                        shape = CircleShape
+                    )
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.dp,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             if (profilePictureUri != null) {
                 Image(
                     painter = rememberAsyncImagePainter(profilePictureUri),
@@ -99,10 +117,14 @@ fun SignUpScreen(
                     modifier = Modifier
                         .size(128.dp)
                         .clip(CircleShape)
-                        .padding(bottom = 16.dp),
-                        contentScale = ContentScale.Crop
+                        .border(
+                            border = BorderStroke(2.dp, Color.Cyan),
+                            shape = CircleShape
+                        ),
+                        contentScale = ContentScale.Crop,
                 )
             }
+            Spacer(modifier = Modifier.height(8.dp))
             Button(onClick = {
                 singlePhotoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }) {
@@ -183,7 +205,13 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(35.dp))
+            Spacer(modifier = Modifier.height(22.dp))
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 3.dp,
+                color = Color.Gray
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = {

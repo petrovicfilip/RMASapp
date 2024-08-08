@@ -87,7 +87,7 @@ class SignUpViewModel private constructor(
         confirmPasswordVisible.value = !confirmPasswordVisible.value
     }
 
-    fun makeAccount(openAndPopUp: () -> Unit,openUpLoading: () -> Unit){
+    fun makeAccount(openAndPopUp: () -> Unit, openUpLoading: () -> Unit){
 
         openUpLoading()
         GlobalScope.launch(Dispatchers.IO){
