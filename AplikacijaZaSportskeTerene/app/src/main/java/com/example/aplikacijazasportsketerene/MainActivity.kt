@@ -2,6 +2,8 @@ package com.example.aplikacijazasportsketerene
 
 import NavigationBar
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -24,20 +26,35 @@ import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.Services.PermissionService
 import com.example.aplikacijazasportsketerene.UserInterface.signup.SignUpScreen
 import com.example.aplikacijazasportsketerene.UserInterface.all.HomePage
+import com.example.aplikacijazasportsketerene.UserInterface.all.LoadingScreen
+import com.example.aplikacijazasportsketerene.UserInterface.all.ProfilePage
 import com.example.aplikacijazasportsketerene.UserInterface.all.SplashScreen
 import com.example.aplikacijazasportsketerene.UserInterface.all.LogInScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 
 class MainActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.Q)
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val permissions = PermissionService(activity = this)
+        permissions.getNotificationPermissions()
+        permissions.getLocationPermissions()
+
         enableEdgeToEdge()
         setContent {
             AplikacijaZaSportskeTereneTheme {
                 //SplashScreen(navController = rememberNavController())
                 NavigationInitialization(context = this)
-                PermissionService(activity = this).getLocationPermissions()
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val channel = NotificationChannel(
+                        "location",
+                        "Location",
+                        NotificationManager.IMPORTANCE_DEFAULT
+                    )
+                    val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    notificationManager.createNotificationChannel(channel)
+                }
                 Intent(applicationContext, LocationService::class.java).apply {
                     action = LocationService.ACTION_START
                     startService(this)
@@ -45,6 +62,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -128,6 +146,10 @@ class MainActivity : ComponentActivity() {
                             navigationBar = navigationBar
                         )
                     }
+                    composable(Screen.Loading.name) {
+                        LoadingScreen(
+                        )
+                    }
                 }
             }
         }
@@ -138,14 +160,6 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun PlayersPage(navController: NavController, context: Context?, navigationBar: NavigationBar) {
         Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Players.name) }) {
-        }
-    }
-
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    private
-    @Composable
-    fun ProfilePage(navController: NavController, context: Context?, navigationBar: NavigationBar) {
-        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Profile.name) }) {
         }
     }
 
@@ -176,5 +190,6 @@ enum class Screen {
     Search,
     Courts,
     Profile,
-    Players
+    Players,
+    Loading
 }

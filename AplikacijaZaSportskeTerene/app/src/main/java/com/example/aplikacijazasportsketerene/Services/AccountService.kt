@@ -49,10 +49,10 @@ class AccountService {
                 phoneNumber = phoneNumber
             )
         )
-        signOut() //...
+    //        signOut()...
     }
 
-    private fun signOut() {
+     fun signOut() {
         Firebase.auth.signOut()
     }
 

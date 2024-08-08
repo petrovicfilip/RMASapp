@@ -3,6 +3,11 @@ package com.example.aplikacijazasportsketerene.UserInterface.signup
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +19,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -25,14 +31,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.Screen
 
@@ -51,6 +64,15 @@ fun SignUpScreen(
     val phoneNumber by signUpViewModel.phoneNumber.collectAsState()
     val passwordVisible by signUpViewModel.passwordVisible.collectAsState()
     val confirmPasswordVisible by signUpViewModel.confirmPasswordVisible.collectAsState()
+    var profilePictureUri by remember { mutableStateOf<Uri?>(signUpViewModel.profilePicture) }
+
+    val singlePhotoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            profilePictureUri = uri
+            signUpViewModel.updateUri(uri)
+        }
+    )
 
     Scaffold(){ _ ->
         Column(
@@ -70,6 +92,23 @@ fun SignUpScreen(
                     .padding(bottom = 32.dp)
                     .padding(top = 15.dp)
             )
+            if (profilePictureUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(profilePictureUri),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(128.dp)
+                        .clip(CircleShape)
+                        .padding(bottom = 16.dp),
+                        contentScale = ContentScale.Crop
+                )
+            }
+            Button(onClick = {
+                singlePhotoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }) {
+                Text("Odaberite profilnu sliku")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = firstName,
                 onValueChange = {
@@ -204,13 +243,23 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = { signUpViewModel.onSignUpClick { navController.popBackStack(Screen.SignIn.name, inclusive = true) } },
+                onClick = { signUpViewModel.onSignUpClick ({
+                    navController.popBackStack(Screen.SignIn.name, inclusive = true)
+                    Toast.makeText(
+                        context,
+                        "Verifikujte nalog, klikom na link poslat na vas mail!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },{
+                    navController.navigate(Screen.Loading.name)
+                } )},
                 modifier = Modifier
                     .height(60.dp)
                     .fillMaxWidth()
             ) {
                 Text("Napravite nalog")
             }
+
         }
     }
 }
