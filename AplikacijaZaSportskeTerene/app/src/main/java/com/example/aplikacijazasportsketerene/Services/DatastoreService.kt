@@ -26,19 +26,20 @@ class DatastoreService private constructor() {
     }
 
 
-    suspend fun uploadProfilePicture(userId: String, uri: Uri){
+    suspend fun uploadProfilePicture(userId: String, uri: Uri) {
         val img = datastore.child("users").child(userId).child("profilePicture").child("profilePicture.jpg")
 
         img.putFile(uri,imgMetadata).await()
     }
 
-    fun downloadProfilePicture(userId: String){
+    suspend fun downloadProfilePicture(userId: String) : Uri? {
         val img = datastore.child("users").child(userId).child("profilePicture").child("profilePicture.jpg")
 
-        img.downloadUrl
-            .addOnSuccessListener {
-                ProfileViewModel.getClassInstance().profilePicture = it
-            }
+        val uri = img.downloadUrl.await()
+//            .addOnSuccessListener {
+//                ProfileViewModel.getClassInstance().profilePicture = it
+//            }
+        return uri
     }
 
 }

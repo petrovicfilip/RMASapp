@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.aplikacijazasportsketerene.Location.LocationService
+import com.example.aplikacijazasportsketerene.Location.LocationService.Companion.NEARBY_USERS_CHANNEL_ID
 import com.example.aplikacijazasportsketerene.Services.PermissionService
 import com.example.aplikacijazasportsketerene.UserInterface.signup.SignUpScreen
 import com.example.aplikacijazasportsketerene.UserInterface.all.HomePage
@@ -50,10 +51,12 @@ class MainActivity : ComponentActivity() {
                     val channel = NotificationChannel(
                         "location",
                         "Location",
-                        NotificationManager.IMPORTANCE_DEFAULT
+                        NotificationManager.IMPORTANCE_LOW
                     )
+
                     val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                     notificationManager.createNotificationChannel(channel)
+
                 }
                 Intent(applicationContext, LocationService::class.java).apply {
                     action = LocationService.ACTION_START

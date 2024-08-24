@@ -27,7 +27,9 @@ class ProfileViewModel private constructor(): ViewModel() {
 
     fun getUserProfilePicture(){
         viewModelScope.launch {
-            DatastoreService.getClassInstance().downloadProfilePicture(Firebase.auth.currentUser!!.uid)
+            val uri = DatastoreService.getClassInstance().downloadProfilePicture(Firebase.auth.currentUser!!.uid)
+            if (uri != null)
+                profilePicture = uri
         }
     }
 

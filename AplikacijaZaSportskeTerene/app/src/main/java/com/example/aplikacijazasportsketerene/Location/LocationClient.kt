@@ -24,7 +24,7 @@ class LocationClient(
     @SuppressLint("MissingPermission")
      fun getLocationUpdates(interval: Long): Flow<Location> {
         return callbackFlow {
-            if (!context.hasLocationPermission()) {
+            if (!hasLocationPermission()) {
                 throw Exception("Nedostaje dozvola za lokaciju!")
             }
 
@@ -61,7 +61,7 @@ class LocationClient(
             }
         }
     }
-    private fun Context.hasLocationPermission(): Boolean {
+    private fun hasLocationPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_COARSE_LOCATION

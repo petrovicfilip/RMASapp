@@ -29,7 +29,7 @@ class SignUpViewModel private constructor(
 
         fun getClassInstance(context: Context): SignUpViewModel {
             return instance ?: synchronized(this) {
-                return instance ?: SignUpViewModel(accountService = AccountService(),context).also { instance = it }
+                return instance ?: SignUpViewModel(accountService = AccountService.getClassInstance(),context).also { instance = it }
             }
         }
     }
@@ -104,6 +104,7 @@ class SignUpViewModel private constructor(
                     DatastoreService.getClassInstance()
                         .uploadProfilePicture(Firebase.auth.currentUser!!.uid, profilePicture!!)
                 }
+                // TODO else { ... }
             }
             accountService.signOut()
 
@@ -113,7 +114,6 @@ class SignUpViewModel private constructor(
         }
 
     }
-
     fun onSignUpClick(openAndPopUp: () -> Unit, openUpLoading: () -> Unit) {
 
         viewModelScope.launch {

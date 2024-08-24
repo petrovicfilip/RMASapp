@@ -22,7 +22,7 @@ class LogInViewModel private constructor(
         fun getClassInstance(context: Context) : LogInViewModel {
 
             return instance ?: synchronized(this) {
-                return instance ?: LogInViewModel(accountService = AccountService(), context).also { instance = it }
+                return instance ?: LogInViewModel(accountService = AccountService.getClassInstance(), context).also { instance = it }
             }
         }
     }
@@ -56,8 +56,16 @@ class LogInViewModel private constructor(
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            else
-                Toast.makeText(appContext, "Pogresni podaci za prijavu!", Toast.LENGTH_SHORT).show()
+            else {
+                if(email.value == "" && password.value == "")
+                    Toast.makeText(appContext, "Unesite e-mail i sifru!", Toast.LENGTH_SHORT).show()
+                else if(email.value == "")
+                    Toast.makeText(appContext, "Unesite e-mail!", Toast.LENGTH_SHORT).show()
+                else if (password.value == "")
+                    Toast.makeText(appContext, "Unesite sifru!", Toast.LENGTH_SHORT).show()
+                else
+                    Toast.makeText(appContext, "Pogresni podaci za prijavu!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

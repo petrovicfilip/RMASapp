@@ -22,20 +22,19 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.aplikacijazasportsketerene.Location.LocationService
-import com.example.aplikacijazasportsketerene.MainActivity
 import com.example.aplikacijazasportsketerene.Screen
-import com.google.android.gms.maps.GoogleMap
+import com.example.aplikacijazasportsketerene.Services.AccountService
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -77,7 +76,8 @@ fun HomePage(
                     onClick = {
                         navController.popBackStack(Screen.Home.name, inclusive = true)
                         navController.navigate(Screen.LogIn.name)
-                        GlobalScope.launch(Dispatchers.IO) { Firebase.auth.signOut() }
+                        GlobalScope.launch(Dispatchers.IO) { AccountService.getClassInstance().signOut()}
+                        // TODO method reset which resets the app (clears ViewModels etc)
                     },
                     Modifier
                         .height(60.dp)

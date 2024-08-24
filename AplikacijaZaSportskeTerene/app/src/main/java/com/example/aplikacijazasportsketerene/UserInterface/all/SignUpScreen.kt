@@ -25,7 +25,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,10 +46,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.Screen
 
@@ -145,7 +142,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(17.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = lastName,
                 onValueChange = {
@@ -160,7 +157,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(17.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = username,
                 onValueChange = {
@@ -175,7 +172,7 @@ fun SignUpScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(17.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = email,
                 onValueChange = {
@@ -240,7 +237,7 @@ fun SignUpScreen(
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
             )
-            Spacer(modifier = Modifier.height(17.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = {
@@ -282,12 +279,12 @@ fun SignUpScreen(
                     navController.navigate(Screen.Loading.name)
                 } )},
                 modifier = Modifier
-                    .height(60.dp)
+                    .height(40.dp)
                     .fillMaxWidth()
             ) {
                 Text("Napravite nalog")
             }
-
+            Spacer(modifier = Modifier.height(35.dp))
         }
     }
 }

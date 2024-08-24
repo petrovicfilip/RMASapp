@@ -7,6 +7,16 @@ import kotlinx.coroutines.tasks.await
 
 class AccountService {
 
+    companion object{
+        var instance: AccountService? = null
+
+        fun getClassInstance(): AccountService {
+            return instance ?: synchronized(this) {
+                return instance ?: AccountService().also { instance = it }
+            }
+        }
+    }
+
     private val firebaseDB = FirebaseDBService()
 
     val currentUserId: String

@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -40,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.Screen
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 
 @Composable
@@ -88,7 +88,7 @@ fun LogInScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = password,
                 onValueChange = {
@@ -132,7 +132,6 @@ fun LogInScreen(
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(
                 onClick = { navController.navigate(Screen.SignIn.name) },
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.Magenta)
             ) {
                 Text("Napravite nalog")
             }

@@ -1,21 +1,35 @@
 package com.example.aplikacijazasportsketerene.Location
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
+import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.os.Build
 import android.os.IBinder
+import android.provider.Settings.Global
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.example.aplikacijazasportsketerene.MainActivity
+import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class LocationService: Service() {
 
@@ -34,14 +48,17 @@ class LocationService: Service() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action) {
             ACTION_START -> start()
             ACTION_STOP -> stop()
         }
         return super.onStartCommand(intent, flags, startId)
+        //return START_REDELIVER_INTENT
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun start() {
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Pracenje lokacije...")
@@ -50,6 +67,14 @@ class LocationService: Service() {
             .setOngoing(true)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val nearbyUsersChannel = NotificationChannel(
+            NEARBY_USERS_CHANNEL_ID,
+            "Nearby Users",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        nearbyUsersChannel.description = "Kanal za obavestenja o korisnicima u blizini"
+        notificationManager.createNotificationChannel(nearbyUsersChannel)
 
         locationClient
             .getLocationUpdates(1000L)
@@ -61,6 +86,66 @@ class LocationService: Service() {
                 val updatedNotification = notification.setContentText(
                     "Lokacija: ($lat, $long)"
                 )
+                val geopoint = GeoPoint(location.latitude, location.longitude)
+                val currentUserId = Firebase.auth.currentUser?.uid
+                if(currentUserId != null) {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        FirebaseDBService().updateUserLocation(
+                            currentUserId,
+                            geopoint
+                        )
+                    }
+                }
+
+                ///////////////////////
+                FirebaseDBService().findNearbyUsers(location.latitude, location.longitude) { nearbyUsers ->
+                    if (nearbyUsers.isNotEmpty()) {
+                        val userCount = nearbyUsers.size
+
+                        // Pending intent for opening the app
+                        val resultIntent = Intent(this@LocationService, MainActivity::class.java)
+                        val stackBuilder = TaskStackBuilder.create(this@LocationService)
+                        stackBuilder.addNextIntentWithParentStack(resultIntent)
+
+                        val resultPendingIntent = stackBuilder.getPendingIntent(
+                            0,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+
+                        // Pending intent for marking notification as read
+                        val markAsReadIntent = Intent(this@LocationService, LocationService::class.java)
+                        markAsReadIntent.action = ACTION_MARK_AS_READ
+                        val markAsReadPendingIntent = PendingIntent.getService(
+                            this@LocationService,
+                            1,
+                            markAsReadIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+
+                        val nearbyUsersNotificationManager =
+                            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+                        // Build notification for nearby users
+                        val nearbyUsersNotification = NotificationCompat.Builder(applicationContext, NEARBY_USERS_CHANNEL_ID)
+                            .setContentTitle("Novi korisnici u blizini!")
+                            .setContentText("Broj novih korisnika u blizini: $userCount")
+                            .setSmallIcon(android.R.drawable.ic_dialog_map)
+                            .setContentIntent(resultPendingIntent)
+                            .addAction(
+                                android.R.drawable.ic_menu_close_clear_cancel,
+                                "Oznaci kao procitano",
+                                markAsReadPendingIntent
+                            )
+                            .setAutoCancel(true)
+                            .setOngoing(false)
+
+                        // Show the nearby users notification (without startForeground)
+                        nearbyUsersNotificationManager.notify(2, nearbyUsersNotification.build())
+                    }
+                }
+                //////////////////////////////////
+
+
                 notificationManager.notify(1, updatedNotification.build())
             }
             .launchIn(serviceScope)
@@ -82,5 +167,12 @@ class LocationService: Service() {
         const val ACTION_START = "ACTION_START"
         const val ACTION_STOP = "ACTION_STOP"
         var locationUpdates = MutableStateFlow<Location?>(null)
+
+        const val ACTION_MARK_AS_READ = "ACTION_MARK_AS_READ"
+        //const val LOCATION_CHANNEL_ID = "location_channel" - TBD
+        const val NEARBY_USERS_CHANNEL_ID = "nearby_users_channel"
+        const val LOCATION_NOTIFICATION_ID = 1
+        const val NEARBY_USERS_NOTIFICATION_ID = 2
     }
+
 }
