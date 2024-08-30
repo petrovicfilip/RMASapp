@@ -16,18 +16,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.aplikacijazasportsketerene.Location.CurrentUserLocation
 import com.example.aplikacijazasportsketerene.Location.LocationService
+import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
 import com.example.aplikacijazasportsketerene.Screen
 import com.example.aplikacijazasportsketerene.Services.AccountService
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -44,7 +50,9 @@ fun HomePage(
     navigationBar: NavigationBar){
     Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Home.name) })
     {
-        val locationUpdates = LocationService.locationUpdates.collectAsState()
+        //val locationUpdates = LocationService.locationUpdates.collectAsState()
+        val locationUpdates = CurrentUserLocation.getClassInstance().location.collectAsState()
+        val nearbyUsers  by remember { mutableStateOf(PersistedNearbyUsers.persistedUsers) }
 
         val currentLocation = locationUpdates.value
         val cameraPositionState = rememberCameraPositionState {
@@ -95,11 +103,39 @@ fun HomePage(
                     .height(400.dp),
                 cameraPositionState = cameraPositionState
             ) {
-                currentLocation?.let {
+                currentLocation?.let { it ->
+//                    Marker(
+//                        state = MarkerState(position = LatLng(it.latitude, it.longitude)),
+//                        title = "Vaša trenutna lokacija"
+//                    )
+                    Circle(
+                        center = LatLng(it.latitude,it.longitude),
+                        radius = 50.0, // Example radius in meters, adjust as needed
+                        strokeColor = Color(0xFF1E88E5), // Blue stroke color
+                        strokeWidth = 3f, // Stroke width
+                        fillColor = Color(0x301E88E5) // Semi-transparent blue fill color
+                    )
                     Marker(
                         state = MarkerState(position = LatLng(it.latitude, it.longitude)),
                         title = "Vaša trenutna lokacija"
                     )
+                    if (nearbyUsers.isNotEmpty()) {
+                        nearbyUsers.forEach { user ->
+                            user?.let {
+                                it.latLon?.let { latLon ->
+                                    Marker(
+                                        state = MarkerState(
+                                            position = LatLng(
+                                                latLon.latitude,
+                                                latLon.longitude
+                                            )
+                                        ),
+                                        title = "Korisnik: ${it.username}"
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

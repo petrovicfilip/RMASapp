@@ -9,11 +9,16 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -111,9 +116,23 @@ class FirebaseDBService {
             .await()
         return querySnapshot.documents.mapNotNull { it.toObject<User>() }
     }
+    suspend fun getUserLocation(uid: String): GeoPoint? {
+        return withContext(Dispatchers.IO) {
+            val user = users.document(uid).get().await().toObject<User>()
+            user?.latLon
+        }
+    }
 
+    //alternative... vrati deffered, pa ga sacekamo, bolje nego CoroutineScope(...).launch...
+    /*suspend fun getUserLocation(uid: String): GeoPoint? {
+        val userDeferred = CoroutineScope(Dispatchers.IO).async {
+            users.document(uid).get().await().toObject<User>()
+        }
+        val user = userDeferred.await()
+        return user?.latLon
+    }*/
      fun updateUserLocation(uid: String,location: GeoPoint) {
-        users.document(uid).update("latlon",location). //await()
+        users.document(uid).update("latLon",location). //await()
         addOnSuccessListener {
             Log.d("UPDATED_USER_LOCATION","Successfully updated user location.")
         }.
@@ -131,9 +150,11 @@ class FirebaseDBService {
         val docs = usersCollection.get().await()
         val nearbyUsers = mutableListOf<User>()
 
-        for(d in docs) {
-            val user = d.toObject<User>()
+        val usersList = docs.mapNotNull { it.toObject<User>() }
+
+        for(user in usersList) {
             nearbyUsers.add(user)
+            Log.d("LOKEJSN","${user.latLon!!.latitude},${user.latLon!!.longitude}")
         }
         onComplete(nearbyUsers)
 //        val boundingBox = calculateBoundingBox(latitude, longitude, 50.0)

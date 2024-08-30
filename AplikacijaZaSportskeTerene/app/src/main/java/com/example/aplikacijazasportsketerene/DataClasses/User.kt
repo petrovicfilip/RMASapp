@@ -10,5 +10,5 @@ data class User(
     val lastName: String? = "",
     val phoneNumber: String? = "",
     val profilePicture: String? = null,
-    val latLon : GeoPoint? = null
+    val latLon : GeoPoint? = GeoPoint(0.0,0.0)
 )

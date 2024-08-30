@@ -22,8 +22,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.aplikacijazasportsketerene.DataClasses.User
 import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.Location.LocationService.Companion.NEARBY_USERS_CHANNEL_ID
+import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
+import com.example.aplikacijazasportsketerene.Location.UsersService
 import com.example.aplikacijazasportsketerene.Services.PermissionService
 import com.example.aplikacijazasportsketerene.UserInterface.signup.SignUpScreen
 import com.example.aplikacijazasportsketerene.UserInterface.all.HomePage
@@ -32,6 +35,7 @@ import com.example.aplikacijazasportsketerene.UserInterface.all.ProfilePage
 import com.example.aplikacijazasportsketerene.UserInterface.all.SplashScreen
 import com.example.aplikacijazasportsketerene.UserInterface.all.LogInScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
+//import com.google.firebase.firestore.auth.User
 
 class MainActivity : ComponentActivity() {
 
@@ -62,6 +66,10 @@ class MainActivity : ComponentActivity() {
                     action = LocationService.ACTION_START
                     startService(this)
                 }
+                Intent(applicationContext, UsersService::class.java).apply {
+                    action = UsersService.ACTION_START
+                    startService(this)
+                }
             }
         }
     }
@@ -73,6 +81,13 @@ class MainActivity : ComponentActivity() {
             action = LocationService.ACTION_STOP
             startService(this)
         }
+        Intent(applicationContext, UsersService::class.java).apply {
+            action = UsersService.ACTION_STOP
+            startService(this)
+        }
+
+        // Temporary !!!!
+        PersistedNearbyUsers.persistedUsers = mutableListOf(null)
     }
 
     @Composable

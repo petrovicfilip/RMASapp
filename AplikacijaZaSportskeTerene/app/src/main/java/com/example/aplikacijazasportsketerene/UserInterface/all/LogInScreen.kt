@@ -120,10 +120,14 @@ fun LogInScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    logInViewModel.OnSignUpClick {
+                    logInViewModel.onSignInClick( {
                         navController.popBackStack(Screen.LogIn.name, inclusive = true)
                         navController.navigate(Screen.Home.name)
-                    }
+                    },{
+                        navController.navigate(Screen.Loading.name)
+                    },{
+                        navController.popBackStack(Screen.Loading.name, inclusive = true)
+                    })
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

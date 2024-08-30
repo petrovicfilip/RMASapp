@@ -10,7 +10,6 @@ import android.content.Intent
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
-import android.provider.Settings.Global
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.aplikacijazasportsketerene.MainActivity
@@ -19,7 +18,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.GeoPoint
-import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -54,8 +52,8 @@ class LocationService: Service() {
             ACTION_START -> start()
             ACTION_STOP -> stop()
         }
-        return super.onStartCommand(intent, flags, startId)
-        //return START_REDELIVER_INTENT
+        //return super.onStartCommand(intent, flags, startId)
+        return START_REDELIVER_INTENT
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -63,24 +61,24 @@ class LocationService: Service() {
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Pracenje lokacije...")
             .setContentText("Lokacija: -")
-            .setSmallIcon(androidx.core.R.drawable.notification_icon_background)
+            .setSmallIcon(android.R.drawable.ic_menu_mapmode)
             .setOngoing(true)
 
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        val nearbyUsersChannel = NotificationChannel(
-            NEARBY_USERS_CHANNEL_ID,
-            "Nearby Users",
-            NotificationManager.IMPORTANCE_HIGH
-        )
-        nearbyUsersChannel.description = "Kanal za obavestenja o korisnicima u blizini"
-        notificationManager.createNotificationChannel(nearbyUsersChannel)
+//
+//        val nearbyUsersChannel = NotificationChannel(
+//            NEARBY_USERS_CHANNEL_ID,
+//            "Nearby Users",
+//            NotificationManager.IMPORTANCE_HIGH
+//        )
+//        nearbyUsersChannel.description = "Kanal za obavestenja o korisnicima u blizini"
+//        notificationManager.createNotificationChannel(nearbyUsersChannel)
 
         locationClient
             .getLocationUpdates(1000L)
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
-                locationUpdates.value = location
+                CurrentUserLocation.getClassInstance().location.value = location
                 val lat = location.latitude.toString()
                 val long = location.longitude.toString()
                 val updatedNotification = notification.setContentText(
@@ -98,51 +96,51 @@ class LocationService: Service() {
                 }
 
                 ///////////////////////
-                FirebaseDBService().findNearbyUsers(location.latitude, location.longitude) { nearbyUsers ->
-                    if (nearbyUsers.isNotEmpty()) {
-                        val userCount = nearbyUsers.size
-
-                        // Pending intent for opening the app
-                        val resultIntent = Intent(this@LocationService, MainActivity::class.java)
-                        val stackBuilder = TaskStackBuilder.create(this@LocationService)
-                        stackBuilder.addNextIntentWithParentStack(resultIntent)
-
-                        val resultPendingIntent = stackBuilder.getPendingIntent(
-                            0,
-                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                        )
-
-                        // Pending intent for marking notification as read
-                        val markAsReadIntent = Intent(this@LocationService, LocationService::class.java)
-                        markAsReadIntent.action = ACTION_MARK_AS_READ
-                        val markAsReadPendingIntent = PendingIntent.getService(
-                            this@LocationService,
-                            1,
-                            markAsReadIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                        )
-
-                        val nearbyUsersNotificationManager =
-                            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-                        // Build notification for nearby users
-                        val nearbyUsersNotification = NotificationCompat.Builder(applicationContext, NEARBY_USERS_CHANNEL_ID)
-                            .setContentTitle("Novi korisnici u blizini!")
-                            .setContentText("Broj novih korisnika u blizini: $userCount")
-                            .setSmallIcon(android.R.drawable.ic_dialog_map)
-                            .setContentIntent(resultPendingIntent)
-                            .addAction(
-                                android.R.drawable.ic_menu_close_clear_cancel,
-                                "Oznaci kao procitano",
-                                markAsReadPendingIntent
-                            )
-                            .setAutoCancel(true)
-                            .setOngoing(false)
-
-                        // Show the nearby users notification (without startForeground)
-                        nearbyUsersNotificationManager.notify(2, nearbyUsersNotification.build())
-                    }
-                }
+//                FirebaseDBService().findNearbyUsers(location.latitude, location.longitude) { nearbyUsers ->
+//                    if (nearbyUsers.isNotEmpty()) {
+//                        val userCount = nearbyUsers.size
+//
+//                        // Pending intent for opening the app
+//                        val resultIntent = Intent(this@LocationService, MainActivity::class.java)
+//                        val stackBuilder = TaskStackBuilder.create(this@LocationService)
+//                        stackBuilder.addNextIntentWithParentStack(resultIntent)
+//
+//                        val resultPendingIntent = stackBuilder.getPendingIntent(
+//                            0,
+//                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//                        )
+//
+//                        // Pending intent for marking notification as read
+//                        val markAsReadIntent = Intent(this@LocationService, LocationService::class.java)
+//                        markAsReadIntent.action = ACTION_MARK_AS_READ
+//                        val markAsReadPendingIntent = PendingIntent.getService(
+//                            this@LocationService,
+//                            1,
+//                            markAsReadIntent,
+//                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+//                        )
+//
+//                        val nearbyUsersNotificationManager =
+//                            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//
+//                        // Build notification for nearby users
+//                        val nearbyUsersNotification = NotificationCompat.Builder(applicationContext, NEARBY_USERS_CHANNEL_ID)
+//                            .setContentTitle("Novi korisnici u blizini!")
+//                            .setContentText("Broj novih korisnika u blizini: $userCount")
+//                            .setSmallIcon(android.R.drawable.ic_dialog_map)
+//                            .setContentIntent(resultPendingIntent)
+//                            .addAction(
+//                                android.R.drawable.ic_menu_close_clear_cancel,
+//                                "Oznaci kao procitano",
+//                                markAsReadPendingIntent
+//                            )
+//                            .setAutoCancel(true)
+//                            .setOngoing(false)
+//
+//                        // Show the nearby users notification (without startForeground)
+//                        nearbyUsersNotificationManager.notify(2, nearbyUsersNotification.build())
+//                    }
+//                }
                 //////////////////////////////////
 
 

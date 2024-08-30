@@ -7,8 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.AccountService
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LogInViewModel private constructor(
     // ...
@@ -44,19 +46,31 @@ class LogInViewModel private constructor(
         passwordVisible.value = !passwordVisible.value
     }
 
-    fun OnSignUpClick(openAndPopUp : () -> Unit) {
+    fun onSignInClick(openAndPopUp : () -> Unit, loading : () -> Unit, popBack : () -> Unit) {
+        loading()
         viewModelScope.launch {
             if(accountService.signIn(email.value, password.value)) {
                 if (Firebase.auth.currentUser!!.isEmailVerified) {
                     Toast.makeText(appContext, "Ulogovani ste!", Toast.LENGTH_SHORT).show()
-                    openAndPopUp()
-                } else Toast.makeText(
-                    appContext,
-                    "Potvrdite vas email klikom na link poslat na isti!",
-                    Toast.LENGTH_SHORT
-                ).show()
+
+                    withContext(Dispatchers.Main){
+                        openAndPopUp()
+                    }
+                } else {
+                    withContext(Dispatchers.Main){
+                        popBack()
+                    }
+                    Toast.makeText(
+                        appContext,
+                        "Potvrdite vas email klikom na link poslat na isti!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             else {
+                withContext(Dispatchers.Main){
+                    popBack()
+                }
                 if(email.value == "" && password.value == "")
                     Toast.makeText(appContext, "Unesite e-mail i sifru!", Toast.LENGTH_SHORT).show()
                 else if(email.value == "")
