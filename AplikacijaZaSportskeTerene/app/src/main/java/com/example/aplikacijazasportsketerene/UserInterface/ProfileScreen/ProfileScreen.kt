@@ -1,6 +1,5 @@
-package com.example.aplikacijazasportsketerene.UserInterface.all
+package com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen
 
-import NavigationBar
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.aplikacijazasportsketerene.Screen
+import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -35,7 +35,7 @@ fun ProfilePage(
     context: Context?,
     navigationBar: NavigationBar,
     ) {
-    val pvm =  ProfileViewModel.getClassInstance()
+    val pvm = ProfileViewModel.getClassInstance()
 
     Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Profile.name) }) {
         if(pvm.profilePicture == null)

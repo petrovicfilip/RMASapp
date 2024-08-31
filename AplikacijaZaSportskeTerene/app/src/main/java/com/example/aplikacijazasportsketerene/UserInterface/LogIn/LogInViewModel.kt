@@ -1,4 +1,4 @@
-package com.example.aplikacijazasportsketerene.UserInterface.all
+package com.example.aplikacijazasportsketerene.UserInterface.LogIn
 
 import android.content.Context
 import android.widget.Toast

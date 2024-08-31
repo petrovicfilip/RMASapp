@@ -1,4 +1,4 @@
-package com.example.aplikacijazasportsketerene.UserInterface.all
+package com.example.aplikacijazasportsketerene.UserInterface.LogIn
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -46,7 +46,8 @@ import com.example.aplikacijazasportsketerene.Screen
 fun LogInScreen(
     navController: NavController,
     context: Context,
-    logInViewModel: LogInViewModel = LogInViewModel.getClassInstance(context)) {
+    logInViewModel: LogInViewModel = LogInViewModel.getClassInstance(context)
+) {
     val email by logInViewModel.email.collectAsState()
     val password by logInViewModel.password.collectAsState()
     val passwordVisible by logInViewModel.passwordVisible.collectAsState()

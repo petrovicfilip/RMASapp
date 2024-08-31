@@ -1,6 +1,6 @@
 package com.example.aplikacijazasportsketerene
 
-import NavigationBar
+import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -19,21 +19,22 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.aplikacijazasportsketerene.DataClasses.User
+import androidx.navigation.navArgument
 import com.example.aplikacijazasportsketerene.Location.LocationService
-import com.example.aplikacijazasportsketerene.Location.LocationService.Companion.NEARBY_USERS_CHANNEL_ID
 import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
 import com.example.aplikacijazasportsketerene.Location.UsersService
 import com.example.aplikacijazasportsketerene.Services.PermissionService
-import com.example.aplikacijazasportsketerene.UserInterface.signup.SignUpScreen
-import com.example.aplikacijazasportsketerene.UserInterface.all.HomePage
-import com.example.aplikacijazasportsketerene.UserInterface.all.LoadingScreen
-import com.example.aplikacijazasportsketerene.UserInterface.all.ProfilePage
-import com.example.aplikacijazasportsketerene.UserInterface.all.SplashScreen
-import com.example.aplikacijazasportsketerene.UserInterface.all.LogInScreen
+import com.example.aplikacijazasportsketerene.UserInterface.AddCourt.AddCourtScreen
+import com.example.aplikacijazasportsketerene.UserInterface.Home.HomePage
+import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreen
+import com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen.ProfilePage
+import com.example.aplikacijazasportsketerene.UserInterface.Splash.SplashScreen
+import com.example.aplikacijazasportsketerene.UserInterface.LogIn.LogInScreen
+import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 //import com.google.firebase.firestore.auth.User
 
@@ -49,7 +50,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AplikacijaZaSportskeTereneTheme {
-                //SplashScreen(navController = rememberNavController())
                 NavigationInitialization(context = this)
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val channel = NotificationChannel(
@@ -87,7 +87,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Temporary !!!!
-        PersistedNearbyUsers.persistedUsers = mutableListOf(null)
+        PersistedNearbyUsers.getClassInstance().reset()
     }
 
     @Composable
@@ -168,6 +168,17 @@ class MainActivity : ComponentActivity() {
                         LoadingScreen(
                         )
                     }
+                    composable(
+                        route = "${Screen.AddCourt.name}/{latitude}/{longitude}",
+                        arguments = listOf(
+                            navArgument("latitude") { type = NavType.FloatType },
+                            navArgument("longitude") { type = NavType.FloatType }
+                        )
+                    ) { backStackEntry ->
+                        val latitude = backStackEntry.arguments?.getFloat("latitude") ?: 0f
+                        val longitude = backStackEntry.arguments?.getFloat("longitude") ?: 0f
+                        AddCourtScreen(latitude = latitude, longitude = longitude, navController = navController, context = context)
+                    }
                 }
             }
         }
@@ -209,5 +220,7 @@ enum class Screen {
     Courts,
     Profile,
     Players,
-    Loading
+    Loading,
+    MapDrawer,
+    AddCourt
 }

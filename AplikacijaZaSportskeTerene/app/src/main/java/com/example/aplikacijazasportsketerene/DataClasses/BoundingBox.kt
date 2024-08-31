@@ -13,7 +13,7 @@ data class BoundingBox(
 )
 
 fun calculateBoundingBox(lat: Double, lon: Double, radiusInMeters: Double): BoundingBox {
-    val earthRadius = 6371e3 // Earth's radius in meters
+    val earthRadius = 6371e3
 
     val latRadians = Math.toRadians(lat)
     val lonRadians = Math.toRadians(lon)
@@ -30,7 +30,7 @@ fun calculateBoundingBox(lat: Double, lon: Double, radiusInMeters: Double): Boun
 }
 
 fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-    val radius = 6371e3 // Radius of Earth in meters
+    val radius = 6371e3 // Zemljin poluprecnik u metrima
     val phi1 = Math.toRadians(lat1)
     val phi2 = Math.toRadians(lat2)
     val deltaPhi = Math.toRadians(lat2 - lat1)

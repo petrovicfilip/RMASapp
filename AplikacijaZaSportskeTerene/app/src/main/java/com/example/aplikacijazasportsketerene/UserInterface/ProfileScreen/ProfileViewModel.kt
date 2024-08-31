@@ -1,4 +1,4 @@
-package com.example.aplikacijazasportsketerene.UserInterface.all
+package com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen
 
 import android.net.Uri
 import androidx.compose.runtime.getValue

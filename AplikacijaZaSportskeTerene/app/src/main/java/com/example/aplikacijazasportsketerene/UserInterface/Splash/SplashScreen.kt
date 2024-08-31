@@ -1,5 +1,5 @@
 
-package com.example.aplikacijazasportsketerene.UserInterface.all
+package com.example.aplikacijazasportsketerene.UserInterface.Splash
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -25,11 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.aplikacijazasportsketerene.R
+import com.example.aplikacijazasportsketerene.UserInterface.Splash.SplashScreenViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
-    viewModel: SplashScreenViewModel = SplashScreenViewModel.getClassInstance(),
+    viewModel: SplashScreenViewModel = SplashScreenViewModel.getInstance(),
     navController: NavController,
 ) {
     Column(

@@ -1,4 +1,4 @@
-package com.example.aplikacijazasportsketerene.UserInterface.signup
+package com.example.aplikacijazasportsketerene.UserInterface.SignUp
 
 import android.content.Context
 import android.net.Uri

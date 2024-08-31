@@ -1,5 +1,5 @@
 //( navController: NavController, context: Context)
-package com.example.aplikacijazasportsketerene.UserInterface.signup
+package com.example.aplikacijazasportsketerene.UserInterface.SignUp
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -56,7 +56,8 @@ import com.example.aplikacijazasportsketerene.Screen
 fun SignUpScreen(
     navController: NavController,
     context: Context,
-    signUpViewModel: SignUpViewModel = SignUpViewModel.getClassInstance(context)) {
+    signUpViewModel: SignUpViewModel = SignUpViewModel.getClassInstance(context)
+) {
     val firstName by signUpViewModel.firstName.collectAsState()
     val lastName by signUpViewModel.lastName.collectAsState()
     val username by signUpViewModel.username.collectAsState()

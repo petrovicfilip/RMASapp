@@ -16,6 +16,8 @@ import androidx.core.app.NotificationCompat
 import com.example.aplikacijazasportsketerene.DataClasses.User
 import com.example.aplikacijazasportsketerene.MainActivity
 import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -92,7 +94,7 @@ class UsersService : Service() {
         // ...
 
         serviceScope.launch {
-            while (true) { // proveriti da li postoji perrmission za lokaciju
+            while (true) { // proveriti da li postoji permission za lokaciju
                 checkNearbyUsers()
                 delay(7500)
             }
@@ -102,7 +104,7 @@ class UsersService : Service() {
 
     private fun checkNearbyUsers() {
         serviceScope.launch{
-            if(currentUserLocation.location.value == null)
+            if(currentUserLocation.location.value == null || Firebase.auth.currentUser == null)
                 return@launch
 
             FirebaseDBService().findNearbyUsers(

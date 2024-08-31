@@ -1,8 +1,8 @@
-package com.example.aplikacijazasportsketerene.UserInterface.all
+package com.example.aplikacijazasportsketerene.UserInterface.Home
 
-import NavigationBar
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,21 +25,20 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.aplikacijazasportsketerene.Location.CurrentUserLocation
-import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
 import com.example.aplikacijazasportsketerene.Screen
 import com.example.aplikacijazasportsketerene.Services.AccountService
+import com.example.aplikacijazasportsketerene.UserInterface.AddCourt.AddCourtViewModel
+import com.example.aplikacijazasportsketerene.UserInterface.Map.MapDrawer
+import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "MutableCollectionMutableState")
@@ -47,7 +46,8 @@ import kotlinx.coroutines.launch
 fun HomePage(
     navController: NavController,
     applicationContext : Context,
-    navigationBar: NavigationBar){
+    navigationBar: NavigationBar
+){
     Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Home.name) })
     {
         //val locationUpdates = LocationService.locationUpdates.collectAsState()
@@ -84,7 +84,9 @@ fun HomePage(
                     onClick = {
                         navController.popBackStack(Screen.Home.name, inclusive = true)
                         navController.navigate(Screen.LogIn.name)
-                        GlobalScope.launch(Dispatchers.IO) { AccountService.getClassInstance().signOut()}
+                        GlobalScope.launch(Dispatchers.IO) {
+                            AccountService.getClassInstance().signOut()
+                        }
                         // TODO method reset which resets the app (clears ViewModels etc)
                     },
                     Modifier
@@ -97,7 +99,18 @@ fun HomePage(
                     Text(text = "Odjavi se!")
                 }
             }
-            MapDrawer()
+            MapDrawer(
+                onNavigateToAddCourt = { latLng ->
+                    val latitude = Uri.encode(latLng.latitude.toString())
+                    val longitude = Uri.encode(latLng.longitude.toString())
+
+                    navController.navigate(Screen.Loading.name)
+                    AddCourtViewModel.getInstance().reverseGeocode(context = applicationContext,onCompleteDecoding = {
+                        navController.popBackStack(Screen.Loading.name, inclusive = true)
+                        navController.navigate("${Screen.AddCourt.name}/$latitude/$longitude")
+                    },latitude = latLng.latitude,longitude = latLng.longitude)
+                    //navController.navigate("${Screen.AddCourt.name}/$latitude/$longitude")
+                })
         }
     }
 }
