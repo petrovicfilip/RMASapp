@@ -42,7 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "MutableCollectionMutableState")
 @Composable
 fun HomePage(
     navController: NavController,
@@ -60,7 +60,7 @@ fun HomePage(
                 LatLng(currentLocation?.latitude ?: 0.0, currentLocation?.longitude ?: 0.0), 15f
             )
         }
-        Column() {
+        Column {
             Row(
                 horizontalArrangement = Arrangement.Center, modifier = Modifier
                     .fillMaxWidth()
@@ -97,47 +97,7 @@ fun HomePage(
                     Text(text = "Odjavi se!")
                 }
             }
-            GoogleMap(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp),
-                cameraPositionState = cameraPositionState
-            ) {
-                currentLocation?.let { it ->
-//                    Marker(
-//                        state = MarkerState(position = LatLng(it.latitude, it.longitude)),
-//                        title = "Vaša trenutna lokacija"
-//                    )
-                    Circle(
-                        center = LatLng(it.latitude,it.longitude),
-                        radius = 50.0, // Example radius in meters, adjust as needed
-                        strokeColor = Color(0xFF1E88E5), // Blue stroke color
-                        strokeWidth = 3f, // Stroke width
-                        fillColor = Color(0x301E88E5) // Semi-transparent blue fill color
-                    )
-                    Marker(
-                        state = MarkerState(position = LatLng(it.latitude, it.longitude)),
-                        title = "Vaša trenutna lokacija"
-                    )
-                    if (nearbyUsers.isNotEmpty()) {
-                        nearbyUsers.forEach { user ->
-                            user?.let {
-                                it.latLon?.let { latLon ->
-                                    Marker(
-                                        state = MarkerState(
-                                            position = LatLng(
-                                                latLon.latitude,
-                                                latLon.longitude
-                                            )
-                                        ),
-                                        title = "Korisnik: ${it.username}"
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            MapDrawer()
         }
     }
 }
