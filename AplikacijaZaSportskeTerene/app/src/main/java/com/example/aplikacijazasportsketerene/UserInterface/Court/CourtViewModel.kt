@@ -3,10 +3,13 @@ package com.example.aplikacijazasportsketerene.UserInterface.Court
 import android.net.Uri
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.aplikacijazasportsketerene.DataClasses.Comment
 import com.example.aplikacijazasportsketerene.DataClasses.Court
+import com.example.aplikacijazasportsketerene.DataClasses.User
 import com.example.aplikacijazasportsketerene.Services.DatastoreService
 import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
 import com.example.aplikacijazasportsketerene.UserInterface.Home.HomeScreenViewModel
@@ -23,6 +26,18 @@ class CourtViewModel(
 ): ViewModel() {
 
 
+    //TEMPORARY - REFAKTORISATI, current user klasa!!!
+    val user = mutableStateOf<User?>(null)
+    fun getUser(uid: String = Firebase.auth.currentUser!!.uid){
+        viewModelScope.launch {
+            val result = FirebaseDBService.getClassInstance().getUser(Firebase.auth.currentUser!!.uid)
+
+            withContext(Dispatchers.Main){
+                user.value = result
+            }
+        }
+    }
+
     val images = mutableStateListOf<Uri?>()
     val isLoading = mutableStateOf(true)
     val court = mutableStateOf<Court?>(court)
@@ -31,7 +46,14 @@ class CourtViewModel(
     val courtRatedBy = mutableIntStateOf(court.ratedBy)
     val myRating = mutableIntStateOf(0)
     val reviewChecker = mutableStateOf(false)
+
     val postingReview = mutableStateOf(false)
+    val fetchingComments = mutableStateOf(false)
+    val fetchingReplies = mutableStateMapOf<Comment,Boolean>()
+    val postingComment = mutableStateOf(false)
+
+    var newComment = mutableStateOf<Comment>(Comment())
+    val commentsAndReplies = mutableStateMapOf<Comment,List<Comment>?>()
 
     private val mutex = Mutex()
 
@@ -48,6 +70,63 @@ class CourtViewModel(
                 images.addAll(listOfDownloadedImageUris)
             }
         }
+    }
+
+    fun getCommentsForCourt(courtId: String = court.value!!.id.toString()) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val comments = FirebaseDBService.getClassInstance().getCommentsForCourt(courtId)
+
+            withContext(Dispatchers.IO){
+                fetchingComments.value = false
+
+                if(commentsAndReplies.isNotEmpty())
+                    commentsAndReplies.clear()
+
+                comments?.forEach { comment ->
+                    commentsAndReplies[comment] = emptyList()
+                }
+            }
+        }
+    }
+
+    //val commentsAndReplies = mutableStateMapOf<Comment,List<Comment>>()
+    fun getRepliesForComment(comment: Comment){
+        viewModelScope.launch(Dispatchers.IO) {
+            val replies = FirebaseDBService.getClassInstance().getRepliesForComment(comment.id)
+            withContext(Dispatchers.Main){
+                fetchingReplies[comment] = false
+                commentsAndReplies[comment] = replies
+            }
+        }
+    }
+
+    fun addComment(comment: Comment,courtId: String = court.value!!.id.toString()){
+        viewModelScope.launch(Dispatchers.IO) {
+            val commentId = FirebaseDBService.getClassInstance().addComment(Firebase.auth.currentUser!!.uid,courtId,comment)
+
+            withContext(Dispatchers.Main){
+                newComment.value.id = commentId
+                newComment.value.value = comment.value
+
+                postingComment.value = false
+                commentsAndReplies[newComment.value] = emptyList()
+            }
+        }
+
+    }
+
+    fun addReply(comment: Comment,replyText: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            FirebaseDBService.getClassInstance().addReply(Firebase.auth.currentUser!!.uid,comment.id,
+                Comment(value = replyText))
+            withContext(Dispatchers.Main){
+                //fetchingReplies.value = false
+                //commentsAndReplies[comment] = replies
+                val stateComment = commentsAndReplies.keys.find { it == comment }
+                stateComment?.numOfReplies = stateComment?.numOfReplies!! + 1
+            }
+        }
+
     }
 
     fun set(){

@@ -75,7 +75,7 @@ class LocationService: Service() {
 //        notificationManager.createNotificationChannel(nearbyUsersChannel)
 
         locationClient
-            .getLocationUpdates(1000L)
+            .getLocationUpdates(10000L) // staviti na 1s, povecano zbog firebase-a
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
                 CurrentUserLocation.getClassInstance().previousLocation.value = CurrentUserLocation.getClassInstance().location.value

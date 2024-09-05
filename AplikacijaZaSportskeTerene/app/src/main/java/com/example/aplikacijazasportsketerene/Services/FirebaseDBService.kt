@@ -2,6 +2,7 @@ package com.example.aplikacijazasportsketerene.Services
 
 import android.net.Uri
 import android.util.Log
+import com.example.aplikacijazasportsketerene.DataClasses.Comment
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.DataClasses.Review
 import com.example.aplikacijazasportsketerene.DataClasses.User
@@ -30,6 +31,8 @@ class FirebaseDBService private constructor() {
     private val users = Firebase.firestore.collection("users")
     private val courts = Firebase.firestore.collection("courts")
     private val reviews = Firebase.firestore.collection("reviews")
+    private val comments = Firebase.firestore.collection("comments")
+    private val likes = Firebase.firestore.collection("likes")
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -131,6 +134,21 @@ class FirebaseDBService private constructor() {
     suspend fun getUserWithUsername(username: String): Boolean = coroutineScope {
         val job = async(Dispatchers.IO) { findUserWithUsername(username) }
         return@coroutineScope job.await().isNotEmpty()
+    }
+
+    suspend fun getUser(uid: String): User? {
+        try{
+            val user = users
+                .document(uid)
+                .get()
+                .await()
+
+            return user.toObject<User>()
+        }
+        catch (e: Exception){
+            Log.d("FAILED_TO_UPDATE_USER_LOCATION", "Location update failed")
+            return null
+        }
     }
 
     suspend fun findUserWithUsername(username: String): List<User> {
@@ -356,13 +374,13 @@ class FirebaseDBService private constructor() {
                 .get()
                 .await()
 
-            if(!reviewRef.isEmpty) {
-               return reviewRef.documents[0].toObject<Review>()
+            return if(!reviewRef.isEmpty) {
+                reviewRef.documents[0].toObject<Review>()
             }
             else {
-               return Review(
-                   value = -1
-               )
+                Review(
+                    value = -1
+                )
             }
         }
         catch (e: Exception) {
@@ -370,6 +388,134 @@ class FirebaseDBService private constructor() {
             return null
         }
     }
+
+    /**
+     * COMMENTS & REPLIES DB CALLS
+     **/
+
+    suspend fun addComment(userId: String,courtId: String,comment: Comment): String{
+        try {
+            val ref = comments.add(comment).await()
+            ref.update("id",ref.id).await()
+
+            return ref.id
+        }
+        catch (e: Exception) {
+            println("Greska pri dodavanju komentara!?!?: ${e.message}")
+            return ""
+        }
+    }
+
+    suspend fun getCommentsForCourt(courtId: String): List<Comment>?{
+        try{
+            val comments = comments.
+                whereEqualTo("courtId",courtId)
+                .get()
+                .await()
+            return comments.documents.mapNotNull { it.toObject<Comment>() }
+        }
+        catch (e: Exception){
+            println("Greska pri fecovanju komentara!?!?: ${e.message}")
+            return null
+        }
+    }
+
+    suspend fun deleteComment(commentId: String) {
+        try {
+            val replies = comments
+                .document(commentId)
+                .collection("replies")
+                .get()
+                .await()
+
+            for (reply in replies.documents) {
+                comments
+                    .document(commentId)
+                    .collection("replies")
+                    .document(reply.id)
+                    .delete()
+                    .await()
+            }
+
+            comments.document(commentId).delete().await()
+
+            Log.d("Firestore", "Komentar i svi odgovori uspešno obrisani: $commentId")
+        } catch (e: Exception) {
+            Log.e("Firestore", "Greška pri brisanju komentara: ${e.message}", e)
+        }
+    }
+
+    suspend fun addReply(userId: String,commentId: String,reply: Comment): Boolean{
+        try{
+            comments.
+                document(commentId)
+                .collection("replies")
+                .add(reply)
+                .await()
+
+            comments
+                .document(commentId)
+                .update("numOfReplies",FieldValue.increment(1))
+            return true
+        }
+        catch (e: Exception){
+            println("Greska pri dodavanju odgovora!?!?: ${e.message}")
+            return false
+        }
+    }
+
+    suspend fun getRepliesForComment(commentId: String): List<Comment>?{
+        try{
+            val replies = comments.
+                document(commentId)
+                .collection("replies")
+                .get()
+                .await()
+
+            return replies.documents.mapNotNull { it.toObject<Comment>() }
+            }
+        catch (e: Exception){
+            println("Greska pri dodavanju odgovora!?!?: ${e.message}")
+            return null
+        }
+    }
+
+    suspend fun deleteReply(commentId: String, replyId: String) {
+        try {
+            comments
+                .document(commentId)
+                .collection("replies")
+                .document(replyId)
+                .delete()
+                .await()
+            Log.d("Firestore", "Odgovor uspešno obrisan: $replyId")
+        } catch (e: Exception) {
+            Log.e("Firestore", "Greška pri brisanju odgovora: ${e.message}", e)
+        }
+    }
+
+    /**
+     * LIKES DB CALLS
+     **/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

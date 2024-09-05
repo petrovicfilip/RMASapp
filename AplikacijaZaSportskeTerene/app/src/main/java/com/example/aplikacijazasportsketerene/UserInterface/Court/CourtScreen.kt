@@ -15,10 +15,9 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
@@ -54,6 +53,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.SingletonViewModel
+import com.example.aplikacijazasportsketerene.UserInterface.Court.Comments.CommentsSection
 
 @Composable
 fun CourtScreen(
@@ -75,6 +75,7 @@ fun CourtScreen(
         courtViewModel.courtRatedBy.intValue = court.ratedBy*/
         courtViewModel.getMyReviewAndUpdateReviewChecker(cid = court.id!!)
         courtViewModel.getImages(court.id)
+        courtViewModel.getUser()
         //courtViewModel.set()
     }
 
@@ -97,33 +98,31 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
     Scaffold(
         modifier = Modifier.fillMaxSize(),
     ) { _ ->
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
                 .imePadding()
                 .padding(16.dp)
         ) {
-            // Naziv terena
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = court.name,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 28.sp
-                    ),
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 16.dp, top = 20.dp)
-                )
+            // Header sa nazivom terena
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = court.name,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 28.sp
+                        ),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 16.dp, top = 20.dp)
+                    )
+                }
             }
+
             // Kartica za opis terena
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
+            item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(4.dp),
@@ -154,100 +153,91 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
                         )
                     }
                 }
-                /*Text(
-                    text = court.description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(16.dp)
-                )*/
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // Kartica za adresu (ulica i grad)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "Location Icon",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Adresa",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-                    Text(
-                        text = "${court.street}, ${court.city}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Kartica za rejting
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = "Rating Icon",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Rejting",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-                    if(courtViewModel.courtRatedBy.intValue != 0){
-                        Text(
-                            text = "${courtViewModel.courtRating.intValue.toDouble() / courtViewModel.courtRatedBy.intValue.toDouble()}/5 " +
-                                    "(${courtViewModel.courtRatedBy.intValue} ocena)",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                    else{
-                        Text(
-                            text = "0/5 (0) ocena",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Prikaz slika u horizontalnoj LazyRow listi
-            if (!courtViewModel.isLoading.value) {
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "Location Icon",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Adresa",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        Text(
+                            text = "${court.street}, ${court.city}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            // Kartica za rejting
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "Rating Icon",
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Rejting",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
+                        if (courtViewModel.courtRatedBy.intValue != 0) {
+                            Text(
+                                text = "${courtViewModel.courtRating.intValue.toDouble() / courtViewModel.courtRatedBy.intValue.toDouble()}/5 " +
+                                        "(${courtViewModel.courtRatedBy.intValue} ocena)",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "0/5 (0) ocena",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Prikaz slika
+            if (!courtViewModel.isLoading.value) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(16.dp)
@@ -268,127 +258,138 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
                     }
                 }
             } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(100.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Kartica za ocenjivanje
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                if(!courtViewModel.postingReview.value){
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Rate Icon",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            if (!courtViewModel.reviewChecker.value)
-                                Text(
-                                    text = "Oceni teren",
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                )
-                            else {
-                                Text(
-                                    text = "Azuriraj ocenu terena, trenutno(${courtViewModel.myRating.intValue}/5)",
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Red za zvezdice
-                        var selectedRating by remember { mutableStateOf(0) }
-                        var userChangingReview by remember { mutableStateOf(false)}
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            for (i in 1..5) {
-                                IconButton(
-                                    onClick = {
-                                        selectedRating = i
-                                        userChangingReview = true
-                                              },
-                                    modifier = Modifier.size(40.dp)
-                                ) {
-                                    if(userChangingReview)
-                                        Icon(
-                                            painter = if (i <= selectedRating)
-                                                painterResource(id = R.drawable.baseline_star_24)
-                                            else
-                                                painterResource(id = R.drawable.baseline_star_outline_24),
-                                            contentDescription = "Ocena $i",
-                                            tint = MaterialTheme.colorScheme.secondary,
-                                            modifier = Modifier.size(40.dp)
-                                        )
-                                    else
-                                        Icon(
-                                            painter = if (i <= courtViewModel.myRating.intValue)
-                                                painterResource(id = R.drawable.baseline_star_24)
-                                            else
-                                                painterResource(id = R.drawable.baseline_star_outline_24),
-                                            contentDescription = "Ocena $i",
-                                            tint = MaterialTheme.colorScheme.secondary,
-                                            modifier = Modifier.size(40.dp)
-                                        )
-                                }
-                            }
-                        }
-
-                        // Dugme za ocenjivanje koje se pojavljuje kada je ocena izabrana
-                        if (selectedRating > 0) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = {
-                                    courtViewModel.postingReview.value = true
-                                    courtViewModel.addOrUpdateReview(
-                                        cid = court.id!!,
-                                        value = selectedRating
-                                    )
-                                },
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            ) {
-                                Text("Oceni")
-                            }
-                        }
-                    }
-                }
-                else {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(
-
-                            ),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(100.dp)
+                            modifier = Modifier.size(150.dp)
                         )
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(45.dp))
+
+            // Ocenjivanje
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    if(!courtViewModel.postingReview.value){
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Rate Icon",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                if (!courtViewModel.reviewChecker.value)
+                                    Text(
+                                        text = "Oceni teren",
+                                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                else {
+                                    Text(
+                                        text = "Azuriraj ocenu terena, trenutno(${courtViewModel.myRating.intValue}/5)",
+                                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Red za zvezdice
+                            var selectedRating by remember { mutableStateOf(0) }
+                            var userChangingReview by remember { mutableStateOf(false)}
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                for (i in 1..5) {
+                                    IconButton(
+                                        onClick = {
+                                            selectedRating = i
+                                            userChangingReview = true
+                                        },
+                                        modifier = Modifier.size(40.dp)
+                                    ) {
+                                        if(userChangingReview)
+                                            Icon(
+                                                painter = if (i <= selectedRating)
+                                                    painterResource(id = R.drawable.baseline_star_24)
+                                                else
+                                                    painterResource(id = R.drawable.baseline_star_outline_24),
+                                                contentDescription = "Ocena $i",
+                                                tint = MaterialTheme.colorScheme.secondary,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                        else
+                                            Icon(
+                                                painter = if (i <= courtViewModel.myRating.intValue)
+                                                    painterResource(id = R.drawable.baseline_star_24)
+                                                else
+                                                    painterResource(id = R.drawable.baseline_star_outline_24),
+                                                contentDescription = "Ocena $i",
+                                                tint = MaterialTheme.colorScheme.secondary,
+                                                modifier = Modifier.size(40.dp)
+                                            )
+                                    }
+                                }
+                            }
+
+                            // Dugme za ocenjivanje koje se pojavljuje kada je ocena izabrana
+                            if (selectedRating > 0) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(
+                                    onClick = {
+                                        courtViewModel.postingReview.value = true
+                                        courtViewModel.addOrUpdateReview(
+                                            cid = court.id!!,
+                                            value = selectedRating
+                                        )
+                                    },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                ) {
+                                    Text("Oceni")
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        Column(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(
+
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(100.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                CommentsSection(courtViewModel = courtViewModel)
+                Spacer(modifier = Modifier.height(45.dp))
+            }
+
         }
     }
 }
+

@@ -96,7 +96,7 @@ class UsersService : Service() {
         serviceScope.launch {
             while (true) { // proveriti da li postoji permission za lokaciju
                 checkNearbyUsers()
-                delay(7500)
+                delay(17500) // staviti na oko 7.5 sec, povecano zbog smanjenja firebase upisa
             }
         }
 
