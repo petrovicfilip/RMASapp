@@ -4,7 +4,9 @@ import android.net.Uri
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import com.google.firebase.storage.storageMetadata
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class DatastoreService private constructor() {
 
@@ -40,5 +42,29 @@ class DatastoreService private constructor() {
 //            }
         return uri
     }
+
+    /**
+     * COURTS IMAGE CALLS
+     **/
+
+    suspend fun uploadCourtImage(uri: Uri,userId: String,courtId: String,imgId: String){
+
+        val img = datastore.child("users").child(userId).child("uploadedCourtsImages").child("court-$courtId").child("$imgId.jpg")
+
+        img.putFile(uri,imgMetadata).await() // moze i bez await, onda nema cekanja u UI, ali slike se uploaduju u pozadini...
+                                             // pitati sta je bolje !!!
+    }
+
+     suspend fun  downloadCourtImages(userId: String, courtId: String): List<Uri> {
+         val img = datastore.child("users").child(userId).child("uploadedCourtsImages").child("court-$courtId")
+
+         val urisOfDownloadedImages = mutableListOf<Uri>()
+
+         img.listAll().await().items.forEach{
+             urisOfDownloadedImages.add(it.downloadUrl.await())
+         }
+
+         return urisOfDownloadedImages
+     }
 
 }

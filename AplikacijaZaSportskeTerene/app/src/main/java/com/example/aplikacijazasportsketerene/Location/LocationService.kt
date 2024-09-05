@@ -78,6 +78,7 @@ class LocationService: Service() {
             .getLocationUpdates(1000L)
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
+                CurrentUserLocation.getClassInstance().previousLocation.value = CurrentUserLocation.getClassInstance().location.value
                 CurrentUserLocation.getClassInstance().location.value = location
                 val lat = location.latitude.toString()
                 val long = location.longitude.toString()
@@ -88,7 +89,7 @@ class LocationService: Service() {
                 val currentUserId = Firebase.auth.currentUser?.uid
                 if(currentUserId != null) {
                     GlobalScope.launch(Dispatchers.IO) {
-                        FirebaseDBService().updateUserLocation(
+                        FirebaseDBService.getClassInstance().updateUserLocation(
                             currentUserId,
                             geopoint
                         )

@@ -129,7 +129,7 @@ class SignUpViewModel private constructor(
                 ).show()
             } else if (password.value != confirmPassword.value) {
                 Toast.makeText(appContext, "Šifre se ne podudaraju!", Toast.LENGTH_SHORT).show()
-            } else if (FirebaseDBService().getUserWithUsername(username.value))
+            } else if (FirebaseDBService.getClassInstance().getUserWithUsername(username.value))
                 Toast.makeText(
                     appContext,
                     "Postoji korisnik sa istim username-om!",

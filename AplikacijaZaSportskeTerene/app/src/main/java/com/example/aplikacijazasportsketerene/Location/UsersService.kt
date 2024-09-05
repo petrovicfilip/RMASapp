@@ -107,7 +107,7 @@ class UsersService : Service() {
             if(currentUserLocation.location.value == null || Firebase.auth.currentUser == null)
                 return@launch
 
-            FirebaseDBService().findNearbyUsers(
+            FirebaseDBService.getClassInstance().findNearbyUsers(
                 currentUserLocation.location.value!!.latitude,
                 currentUserLocation.location.value!!.latitude
             ) { nearbyUsers ->

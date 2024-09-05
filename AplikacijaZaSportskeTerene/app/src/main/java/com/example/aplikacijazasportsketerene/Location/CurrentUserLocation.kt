@@ -16,5 +16,7 @@ class CurrentUserLocation {
         }
     }
 
+    var previousLocation = MutableStateFlow<Location?>(null)
     var location = MutableStateFlow<Location?>(null)
+
 }

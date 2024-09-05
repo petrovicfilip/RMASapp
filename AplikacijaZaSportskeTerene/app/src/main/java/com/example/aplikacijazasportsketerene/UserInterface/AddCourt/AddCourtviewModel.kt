@@ -1,6 +1,7 @@
 package com.example.aplikacijazasportsketerene.UserInterface.AddCourt
 
 import android.content.Context
+import android.content.IntentSender.OnFinished
 import android.location.Geocoder
 import android.net.Uri
 import android.util.Log
@@ -9,7 +10,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aplikacijazasportsketerene.DataClasses.Court
+import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
 import com.example.aplikacijazasportsketerene.SingletonViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,6 +47,8 @@ class AddCourtViewModel private constructor(): ViewModel() {
 
     var courtImagesUris = mutableStateListOf<Uri>()
 
+    //val isVisible = mutableStateOf(false)
+
     fun updateName(newName: String) {
         name.value = newName
     }
@@ -68,6 +76,38 @@ class AddCourtViewModel private constructor(): ViewModel() {
 
     fun updateStreetsMenuExpanded(update: Boolean){
         streetsMenuExpanded.value = update
+    }
+
+    fun reset(){
+        name.value = ""
+        type.value = "Fudbalski"
+        description.value = ""
+        city.value = ""
+        street.value = ""
+        setCoordinates(0f,0f)
+        streetsMenuExpanded.value = false
+
+        streets.clear()
+        courtImagesUris.clear()
+    }
+
+    fun uploadCourt(openUpLoading: () -> Unit, onUploadFinished: () -> Unit){
+        openUpLoading()
+        viewModelScope.launch(Dispatchers.IO){
+            FirebaseDBService.getClassInstance().addCourt(
+                Court(
+                    userId = Firebase.auth.currentUser!!.uid,
+                    name = name.value,
+                    type = type.value,
+                    description = description.value,
+                    city = city.value,
+                    street = street.value,
+                    latLon = GeoPoint(latitude.value.toDouble(), longitude.value.toDouble())
+                ),
+                courtImagesUris.toList(), onUploadFinished
+            )
+        }
+        Log.d("aaa","Lista ima ${courtImagesUris.size} slike ")
     }
 
      fun reverseGeocode(context: Context, onCompleteDecoding: () -> Unit,latitude : Double, longitude: Double) {

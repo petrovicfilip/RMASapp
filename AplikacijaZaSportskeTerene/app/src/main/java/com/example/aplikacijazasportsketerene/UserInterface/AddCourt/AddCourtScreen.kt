@@ -2,13 +2,20 @@ package com.example.aplikacijazasportsketerene.UserInterface.AddCourt
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -20,12 +27,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +49,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.aplikacijazasportsketerene.Screen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,6 +67,11 @@ fun AddCourtScreen(
         //addCourtViewModel.reverseGeocode(context,{})
     }
 
+    BackHandler {
+        navController.navigateUp()
+        addCourtViewModel.reset()
+    }
+
     val name by addCourtViewModel.name
     val type by addCourtViewModel.type
     val description by addCourtViewModel.description
@@ -63,25 +79,44 @@ fun AddCourtScreen(
     val street by addCourtViewModel.street
     val streetsMenuExpanded by addCourtViewModel.streetsMenuExpanded
 
+    //val isVisible by addCourtViewModel.isVisible
+
+    val isVisible by remember { mutableStateOf(false) }
 
     // Za sada...
     val courtTypes = listOf("Fudbalski", "Košarkaški", "Odbojkaški")
 
+    /*AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(
+            initialOffsetY = { fullHeight -> fullHeight },  // Počinje sa dna ekrana
+            animationSpec = tween(durationMillis = 300)  // Trajanje animacije 300ms
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { fullHeight -> fullHeight },  // Vraća se ka dnu ekrana
+            animationSpec = tween(durationMillis = 300)
+        )
+    )*/
     Scaffold(
+        modifier = Modifier,
         topBar = {
             TopAppBar(
                 title = { Text(text = "Dodaj Teren") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = {
+                        addCourtViewModel.reset()
+                        navController.navigateUp()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
         }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(it)
                 .padding(16.dp)
                 .background(Color.Transparent)
                 .verticalScroll(rememberScrollState())
@@ -92,7 +127,7 @@ fun AddCourtScreen(
         ) {
             Row(
                 horizontalArrangement = Arrangement.Center
-            ){
+            ) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { addCourtViewModel.updateName(it) },
@@ -138,7 +173,7 @@ fun AddCourtScreen(
 
             Row(
                 horizontalArrangement = Arrangement.Center
-            ){
+            ) {
                 OutlinedTextField(
                     value = city,
                     onValueChange = {},
@@ -183,7 +218,7 @@ fun AddCourtScreen(
 
             Row(
                 horizontalArrangement = Arrangement.Center
-            ){
+            ) {
                 OutlinedTextField(
                     value = description,
                     onValueChange = { addCourtViewModel.updateDescription(it) },
@@ -195,7 +230,7 @@ fun AddCourtScreen(
 
             Row(
                 horizontalArrangement = Arrangement.Start
-            ){
+            ) {
                 Text(
                     text = "Koordinate: $latitude, $longitude",
                     style = TextStyle(fontSize = 16.sp, color = Color.Gray)
@@ -206,12 +241,21 @@ fun AddCourtScreen(
 
             Button(
                 onClick = {
-                    // Action to be implemented later
+                    addCourtViewModel.uploadCourt(
+                        {
+                            navController.navigate(Screen.Loading.name)
+                        }, {
+                            navController.popBackStack(Screen.Home.name, inclusive = false)
+                        })
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
             ) {
                 Text("Dodaj Teren")
             }
+
+            Spacer(modifier = Modifier.height(30.dp))
         }
     }
 }

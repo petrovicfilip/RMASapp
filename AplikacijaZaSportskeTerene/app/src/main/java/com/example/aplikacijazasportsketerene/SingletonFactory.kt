@@ -17,5 +17,17 @@ abstract class SingletonViewModel<T : ViewModel> {
                 }
             } as T
         }
+
+        fun reset() {
+            synchronized(instances) {
+                instances.clear()
+            }
+        }
+
+        fun <T : ViewModel> resetInstance(clazz: Class<T>) {
+            synchronized(instances) {
+                instances.remove(clazz)
+            }
+        }
     }
 }

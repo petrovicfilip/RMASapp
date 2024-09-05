@@ -24,11 +24,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
 import com.example.aplikacijazasportsketerene.Location.UsersService
 import com.example.aplikacijazasportsketerene.Services.PermissionService
 import com.example.aplikacijazasportsketerene.UserInterface.AddCourt.AddCourtScreen
+import com.example.aplikacijazasportsketerene.UserInterface.Court.CourtScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Home.HomePage
 import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreen
 import com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen.ProfilePage
@@ -36,7 +38,8 @@ import com.example.aplikacijazasportsketerene.UserInterface.Splash.SplashScreen
 import com.example.aplikacijazasportsketerene.UserInterface.LogIn.LogInScreen
 import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
-//import com.google.firebase.firestore.auth.User
+import com.google.gson.Gson
+
 
 class MainActivity : ComponentActivity() {
 
@@ -62,6 +65,7 @@ class MainActivity : ComponentActivity() {
                     notificationManager.createNotificationChannel(channel)
 
                 }
+                // POMERITI NA ODGOVARAJUCA MESTA BALGOVREMENO...
                 Intent(applicationContext, LocationService::class.java).apply {
                     action = LocationService.ACTION_START
                     startService(this)
@@ -179,6 +183,14 @@ class MainActivity : ComponentActivity() {
                         val longitude = backStackEntry.arguments?.getFloat("longitude") ?: 0f
                         AddCourtScreen(latitude = latitude, longitude = longitude, navController = navController, context = context)
                     }
+                    composable(
+                        route = "${Screen.Court.name}/{court}",
+                        arguments = listOf(navArgument("court") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val courtJson = backStackEntry.arguments?.getString("court")
+                        val court = Gson().fromJson(courtJson, Court::class.java)
+                        court?.let { CourtScreen(court = it, navController = navController) }
+                    }
                 }
             }
         }
@@ -221,6 +233,6 @@ enum class Screen {
     Profile,
     Players,
     Loading,
-    MapDrawer,
-    AddCourt
+    AddCourt,
+    Court
 }

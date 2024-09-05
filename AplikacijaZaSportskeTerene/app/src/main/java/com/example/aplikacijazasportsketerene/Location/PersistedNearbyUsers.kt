@@ -2,7 +2,7 @@ package com.example.aplikacijazasportsketerene.Location
 
 import com.example.aplikacijazasportsketerene.DataClasses.User
 
-class PersistedNearbyUsers {
+class PersistedNearbyUsers private constructor(){
 
     companion object{
         private var instance: PersistedNearbyUsers? = null

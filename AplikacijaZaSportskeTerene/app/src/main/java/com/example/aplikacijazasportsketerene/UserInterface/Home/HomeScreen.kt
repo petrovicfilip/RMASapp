@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,8 +47,12 @@ import kotlinx.coroutines.launch
 fun HomePage(
     navController: NavController,
     applicationContext : Context,
-    navigationBar: NavigationBar
+    navigationBar: NavigationBar,
+    homeScreenViewModel: HomeScreenViewModel = HomeScreenViewModel.getInstance()
 ){
+    LaunchedEffect(Unit) {
+
+    }
     Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Home.name) })
     {
         //val locationUpdates = LocationService.locationUpdates.collectAsState()
@@ -110,7 +115,9 @@ fun HomePage(
                         navController.navigate("${Screen.AddCourt.name}/$latitude/$longitude")
                     },latitude = latLng.latitude,longitude = latLng.longitude)
                     //navController.navigate("${Screen.AddCourt.name}/$latitude/$longitude")
-                })
+                },
+                navController = navController
+            )
         }
     }
 }

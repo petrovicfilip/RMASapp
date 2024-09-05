@@ -9,7 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.DatastoreService
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProfileViewModel private constructor(): ViewModel() {
 
@@ -26,10 +28,12 @@ class ProfileViewModel private constructor(): ViewModel() {
     var profilePicture by mutableStateOf<Uri?>(null)
 
     fun getUserProfilePicture(){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val uri = DatastoreService.getClassInstance().downloadProfilePicture(Firebase.auth.currentUser!!.uid)
             if (uri != null)
+            withContext(Dispatchers.Main){
                 profilePicture = uri
+            }
         }
     }
 

@@ -1,22 +1,32 @@
 package com.example.aplikacijazasportsketerene.UserInterface.Map
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.Location.CurrentUserLocation
 import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
+import com.example.aplikacijazasportsketerene.Screen
+import com.example.aplikacijazasportsketerene.UserInterface.Home.HomeScreenViewModel
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.gson.Gson
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -28,11 +38,20 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun MapDrawer(
     mapViewModel: MapDrawerViewModel = MapDrawerViewModel.getClassInstance(),
-    onNavigateToAddCourt: (LatLng) -> Unit
+    onNavigateToAddCourt: (LatLng) -> Unit,
+    homeScreenViewModel: HomeScreenViewModel = HomeScreenViewModel.getInstance(),
+    navController: NavController
 ){
+    homeScreenViewModel.getCourts()
     val locationUpdates = CurrentUserLocation.getClassInstance().location.collectAsState()
     val nearbyUsers by remember { mutableStateOf(PersistedNearbyUsers.persistedUsers) }
     var temporaryMarker by remember { mutableStateOf<LatLng?>(null) }
+
+
+    val markersState = remember { mutableStateOf<List<Court>>(listOf()) }
+    val selectedMarker = remember { mutableStateOf<Court?>(null) }
+    val showButton = remember { mutableStateOf(false) }
+
 
     val currentLocation = locationUpdates.value
     val cameraPositionState = rememberCameraPositionState {
@@ -47,8 +66,13 @@ fun MapDrawer(
             .height(400.dp),
         cameraPositionState = cameraPositionState,
         onMapLongClick = { latLng ->
-            temporaryMarker = latLng
+            Log.d("MapDrawer", "Long click detected at: $latLng") // Log za debug
             onNavigateToAddCourt(latLng)
+            temporaryMarker = latLng
+            showButton.value = false
+        },
+        onMapClick = {
+            showButton.value = false
         }
     ) {
         currentLocation?.let { it ->
@@ -74,20 +98,58 @@ fun MapDrawer(
                                         latLon.longitude
                                     )
                                 ),
-                                title = "Korisnik: ${it.username}"
+                                title = "Korisnik: ${it.username}",
+                                onClick = {
+                                    if(it.isInfoWindowShown)
+                                        it.showInfoWindow()
+                                    showButton.value = false
+                                    false
+                                }
                             )
                         }
                     }
                 }
             }
 
-            temporaryMarker?.let { latLng ->
+            homeScreenViewModel.courts.forEach{ it ->
+                Log.d("OOO","EVO ME TU SAM EURA PUN SAM")
+                Marker(
+                    state = MarkerState(position = LatLng(it.latLon.latitude,it.latLon.longitude)),
+                    title = it.name,
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN),
+                    onClick = {  marker ->
+                        if(marker.isInfoWindowShown)
+                            marker.showInfoWindow()
+                        showButton.value = false
+                        val selectedCourt = homeScreenViewModel.courts.find { it.name == marker.title }
+                        selectedMarker.value = selectedCourt
+                        showButton.value = true
+                        false
+                    }
+                )
+            }
+
+            /*temporaryMarker?.let { latLng ->
+                Log.d("MapDrawer", "Drawing temporary marker at: $latLng") // Log za debug
                 Marker(
                     state = MarkerState(position = latLng),
                     title = "Novi teren",
-                    //icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)
                 )
-            }
+            }*/
+        }
+    }
+    if (showButton.value && showButton.value) {
+        Button(
+            onClick = {
+                selectedMarker.value?.let { court ->
+                    val courtJson = Gson().toJson(court)
+                    navController.navigate("${Screen.Court.name}/$courtJson")
+                }
+            },
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        ) {
+            Text("Pogledaj detalje")
         }
     }
 }
