@@ -175,7 +175,7 @@ fun HomePage(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Person,
-                                        contentDescription = "Ime",
+                                        contentDescription = "Korisnicko ime",
                                         modifier = Modifier.size(24.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -209,7 +209,7 @@ fun HomePage(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Person,
-                                        contentDescription = "Prezime",
+                                        contentDescription = "Ime i prezime",
                                         modifier = Modifier.size(24.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))

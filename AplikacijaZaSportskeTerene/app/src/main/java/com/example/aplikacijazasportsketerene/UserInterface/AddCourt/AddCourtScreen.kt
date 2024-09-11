@@ -19,11 +19,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -113,149 +116,157 @@ fun AddCourtScreen(
             )
         }
     ) {
-        Column(
+
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-                .padding(16.dp)
-                .background(Color.Transparent)
-                .verticalScroll(rememberScrollState())
-                .imePadding(),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-
-            //horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.Center
-            ) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { addCourtViewModel.updateName(it) },
-                    label = { Text("Naziv terena") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            var expanded by remember { mutableStateOf(false) }
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                OutlinedTextField(
-                    value = type,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Tip terena") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { expanded = true }) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Expand")
-                        }
-                    }
-                )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    courtTypes.forEach { courtType ->
-                        DropdownMenuItem(
-                            text = { Text(courtType) },
-                            onClick = {
-                                addCourtViewModel.updateType(courtType)
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.Center
-            ) {
-                OutlinedTextField(
-                    value = city,
-                    onValueChange = {},
-                    readOnly = true, // Grad je zaključan
-                    label = { Text("Grad") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                OutlinedTextField(
-                    value = street,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Ulica") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = { addCourtViewModel.updateStreetsMenuExpanded(true) }) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Expand")
-                        }
-                    }
-                )
-                DropdownMenu(
-                    expanded = streetsMenuExpanded,
-                    onDismissRequest = { addCourtViewModel.updateStreetsMenuExpanded(false) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    addCourtViewModel.streets.forEach { street ->
-                        DropdownMenuItem(
-                            text = { Text(street) },
-                            onClick = {
-                                addCourtViewModel.updateStreet(street)
-                                addCourtViewModel.updateStreetsMenuExpanded(false)
-                            }
-                        )
-                    }
-                }
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.Center
-            ) {
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { addCourtViewModel.updateDescription(it) },
-                    label = { Text("Opis") },
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = 4
-                )
-            }
-
-            Row(
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = "Koordinate: $latitude, $longitude",
-                    style = TextStyle(fontSize = 16.sp, color = Color.Gray)
-                )
-            }
-
-            AddImagesForCourt()
-
-            Button(
-                onClick = {
-                    addCourtViewModel.uploadCourt(
-                        {
-                            navController.navigate(Screen.Loading.name)
-                        }, {
-                            navController.popBackStack(Screen.Home.name, inclusive = false)
-                        })
-                },
+                .fillMaxWidth()
+                .padding(8.dp)
+                .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp),
+            elevation = CardDefaults.cardElevation(4.dp),
+            shape = RoundedCornerShape(8.dp)
+        ){
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-            ) {
-                Text("Dodaj Teren")
-            }
+                    .fillMaxSize()
+                    .padding(it)
+                    .padding(16.dp)
+                    .background(Color.Transparent)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding(),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
 
-            Spacer(modifier = Modifier.height(30.dp))
+                //horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = { addCourtViewModel.updateName(it) },
+                        label = { Text("Naziv terena") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                var expanded by remember { mutableStateOf(false) }
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    OutlinedTextField(
+                        value = type,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Tip terena") },
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = { expanded = true }) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Expand")
+                            }
+                        }
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        courtTypes.forEach { courtType ->
+                            DropdownMenuItem(
+                                text = { Text(courtType) },
+                                onClick = {
+                                    addCourtViewModel.updateType(courtType)
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    OutlinedTextField(
+                        value = city,
+                        onValueChange = {},
+                        readOnly = true, // Grad je zaključan
+                        label = { Text("Grad") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    OutlinedTextField(
+                        value = street,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Ulica") },
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            IconButton(onClick = { addCourtViewModel.updateStreetsMenuExpanded(true) }) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = "Expand")
+                            }
+                        }
+                    )
+                    DropdownMenu(
+                        expanded = streetsMenuExpanded,
+                        onDismissRequest = { addCourtViewModel.updateStreetsMenuExpanded(false) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        addCourtViewModel.streets.forEach { street ->
+                            DropdownMenuItem(
+                                text = { Text(street) },
+                                onClick = {
+                                    addCourtViewModel.updateStreet(street)
+                                    addCourtViewModel.updateStreetsMenuExpanded(false)
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { addCourtViewModel.updateDescription(it) },
+                        label = { Text("Opis") },
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 4
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(
+                        text = "Koordinate: $latitude, $longitude",
+                        style = TextStyle(fontSize = 16.sp, color = Color.Gray)
+                    )
+                }
+
+                AddImagesForCourt()
+
+                Button(
+                    onClick = {
+                        addCourtViewModel.uploadCourt(
+                            {
+                                navController.navigate(Screen.Loading.name)
+                            }, {
+                                navController.popBackStack(Screen.Home.name, inclusive = false)
+                            })
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp)
+                ) {
+                    Text("Dodaj Teren")
+                }
+            }
         }
     }
 }
