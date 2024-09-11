@@ -395,7 +395,8 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
                 IconButton(
                     onClick = {
                         courtViewModel.isLiked.value = !courtViewModel.isLiked.value
-                            courtViewModel.likeOrDislikeCourt(courtId = court.id!!, userId = Firebase.auth.currentUser!!.uid)
+                        val likeOrDislike = courtViewModel.isLiked.value // bravo za mene
+                            courtViewModel.likeOrDislikeCourt(court = court, userId = Firebase.auth.currentUser!!.uid,likeOrDislike = likeOrDislike)
                     }) {
                     if (!courtViewModel.isLiked.value)
                         Icon(

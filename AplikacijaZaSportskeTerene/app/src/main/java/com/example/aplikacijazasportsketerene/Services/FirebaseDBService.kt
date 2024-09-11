@@ -22,6 +22,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
@@ -40,11 +42,13 @@ class FirebaseDBService private constructor() {
     private val foundCourts = Firebase.firestore.collection("foundCourts")
 
     //poeni za razlicite aktivnosti
-    val foundCourtPoints = 1
-    val courtPosted = 2
-    val courtLikedByAnotherUser = 3
+    val courtPosted = 1.0
+    val foundCourtPoints = 2.0
+    val courtLikedByAnotherUser = 3.0
 
     private val scope = CoroutineScope(Dispatchers.IO)
+
+    private val mutexForLikes = Mutex()
 
     companion object {
         var instance: FirebaseDBService? = null
@@ -60,38 +64,6 @@ class FirebaseDBService private constructor() {
     USERS DB CALLS
      **/
 
-//    suspend fun addUser(user: User) {
-//
-//        runBlocking {
-//            var success: Boolean = false
-//            if (user.id == null) // mozda i izbaciti, to be decided
-//                users.add(user)
-//                    .addOnSuccessListener {
-//                        Log.d("USER_DB_ADD", "User document created successfully!")
-//                        success = true
-//                    }
-//                    .addOnFailureListener { e ->
-//                        Log.w(
-//                            "USER_DB_ADD",
-//                            "Error creating user document!",
-//                            e
-//                        )
-//                    }
-//            else {
-//                users.document(user.id).set(user)
-//                    .addOnSuccessListener {
-//                        Log.d("USER_DB_ADD", "User document: ${user.id} created successfully!")
-//                    }
-//                    .addOnFailureListener { e ->
-//                        Log.w(
-//                            "USER_DB_ADD",
-//                            "Error creating user document: ${user.id}!",
-//                            e
-//                        )
-//                    }
-//            }
-//        }
-//    }
     // validno kroz korutine
     suspend fun addUser(user: User) {
         return suspendCancellableCoroutine { continuation ->
@@ -133,13 +105,6 @@ class FirebaseDBService private constructor() {
 //        return querySnapshot.documents.first().toObject<User>()
 //    }
 
-    /* fun getUserWithUsername(username: String): Boolean {
-        var u: List<User>? = null
-        runBlocking {
-            u = async { findUserWithUsername(username) }.await()
-        }
-        return u!!.isNotEmpty()
-    }*/
 
     suspend fun getUserWithUsername(username: String): Boolean = coroutineScope {
         val job = async(Dispatchers.IO) { findUserWithUsername(username) }
@@ -258,6 +223,10 @@ class FirebaseDBService private constructor() {
 
         scope.launch {
             courts.document(ref.id).update("id", ref.id).await()
+            users
+                .document(auth.currentUser!!.uid)
+                .update( "points",FieldValue.increment(courtPosted))
+                .await()
         }
 
         val jobs = listOfUris.mapIndexed { index, uri ->
@@ -578,14 +547,21 @@ class FirebaseDBService private constructor() {
     /**
      * LIKES DB CALLS
      **/
-    suspend fun likeCourt(userId: String,courtId: String): Boolean{
+    suspend fun likeCourt(userId: String,court: Court): Boolean{
         try {
             val likeData = hashMapOf(
                 "userId" to userId,
-                "courtId" to courtId
+                "courtId" to court.id
             )
 
-            likes.document("${userId}-${courtId}").set(likeData).await()
+            likes.document("${userId}-${court.id}").set(likeData).await()
+
+            firestore.runTransaction { transaction ->
+                val userRef = users.document(court.userId!!)
+                val snapshot = transaction.get(userRef)
+                val currentPoints = snapshot.getLong("points") ?: 0L
+                transaction.update(userRef, "points", currentPoints + courtLikedByAnotherUser)
+            }.await()
 
             return true
         }
@@ -594,12 +570,17 @@ class FirebaseDBService private constructor() {
             return false
         }
     }
-
-    suspend fun dislikeCourt(userId: String,courtId: String): Boolean{
+    suspend fun dislikeCourt(userId: String, court: Court): Boolean{
         try {
-            Firebase.firestore.collection("likes").document("$userId-$courtId")
+            firestore.collection("likes").document("$userId-${court.id}")
                 .delete()
                 .await()
+            firestore.runTransaction { transaction ->
+                val userRef = users.document(court.userId!!)
+                val snapshot = transaction.get(userRef)
+                val currentPoints = snapshot.getLong("points") ?: 0L
+                transaction.update(userRef, "points", currentPoints - courtLikedByAnotherUser)
+            }.await()
 
             return true
         }

@@ -200,13 +200,13 @@ class CourtViewModel(
 
     }
 
-    fun likeOrDislikeCourt(userId: String,courtId: String){
+    fun likeOrDislikeCourt(userId: String,court: Court,likeOrDislike: Boolean){
         viewModelScope.launch(Dispatchers.IO) {
             mutexLikes.withLock {
-                if (isLiked.value) // nema potrebe vracati se na main dispatcher radi ove provere...
-                    FirebaseDBService.getClassInstance().likeCourt(userId, courtId)
+                if (likeOrDislike) // nema potrebe vracati se na main dispatcher radi ove provere...
+                    FirebaseDBService.getClassInstance().likeCourt(userId, court)
                 else
-                    FirebaseDBService.getClassInstance().dislikeCourt(userId, courtId)
+                    FirebaseDBService.getClassInstance().dislikeCourt(userId, court)
             }
         }
 
