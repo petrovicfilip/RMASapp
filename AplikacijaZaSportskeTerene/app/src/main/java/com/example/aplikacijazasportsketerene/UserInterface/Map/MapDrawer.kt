@@ -139,7 +139,6 @@ fun MapDrawer(
                 }
 
                 homeScreenViewModel.courts.forEach { it ->
-                    Log.d("OOO", "EVO ME TU SAM EURA PUN SAM")
                     Marker(
                         state = MarkerState(
                             position = LatLng(

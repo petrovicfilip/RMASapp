@@ -26,6 +26,7 @@ class ProfileViewModel private constructor(): ViewModel() {
     }
 
     var profilePicture by mutableStateOf<Uri?>(null)
+    val findingCourtsStarted = mutableStateOf(false)
 
     fun getUserProfilePicture(){
         viewModelScope.launch(Dispatchers.IO) {

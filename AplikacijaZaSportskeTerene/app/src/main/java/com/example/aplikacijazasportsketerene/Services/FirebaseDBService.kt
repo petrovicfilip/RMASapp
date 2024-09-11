@@ -6,13 +6,15 @@ import com.example.aplikacijazasportsketerene.DataClasses.Comment
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.DataClasses.Review
 import com.example.aplikacijazasportsketerene.DataClasses.User
+import com.example.aplikacijazasportsketerene.DataClasses.calculateBoundingBox
+import com.example.aplikacijazasportsketerene.DataClasses.haversine
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import com.google.protobuf.BoolValueOrBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -28,12 +30,19 @@ import kotlin.coroutines.resumeWithException
 class FirebaseDBService private constructor() {
 
     private val firestore = Firebase.firestore
+    private val auth = Firebase.auth
 
     private val users = Firebase.firestore.collection("users")
     private val courts = Firebase.firestore.collection("courts")
     private val reviews = Firebase.firestore.collection("reviews")
     private val comments = Firebase.firestore.collection("comments")
     private val likes = Firebase.firestore.collection("likes")
+    private val foundCourts = Firebase.firestore.collection("foundCourts")
+
+    //poeni za razlicite aktivnosti
+    val foundCourtPoints = 1
+    val courtPosted = 2
+    val courtLikedByAnotherUser = 3
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -189,7 +198,7 @@ class FirebaseDBService private constructor() {
     suspend fun findNearbyUsers(
         latitude: Double,
         longitude: Double,
-        onComplete: (List<User>) -> Unit
+        onComplete: (List<User>) -> Unit,
     ) {
 
         val usersCollection = firestore.collection("users")
@@ -288,6 +297,77 @@ class FirebaseDBService private constructor() {
         val toReturn = foundCourt.toObject<Court>()
 
         return toReturn
+    }
+
+    suspend fun findNearbyCourts(
+        latitude: Double,
+        longitude: Double,
+        onComplete: (List<Court>) -> Unit,
+    ) {
+
+        val boundingBox = calculateBoundingBox(latitude, longitude, 50.0)
+
+        val documents = courts
+            .whereGreaterThanOrEqualTo("latLon", GeoPoint(boundingBox.minLat, boundingBox.minLon))
+            .whereLessThanOrEqualTo("latLon", GeoPoint(boundingBox.maxLat, boundingBox.maxLon))
+            .get()
+            .await()
+
+        val nearbyCourts = mutableListOf<Court>()
+
+        for (document in documents) {
+            val geoPoint = document.getGeoPoint("latLon") ?: continue
+            val courtLat = geoPoint.latitude
+            val courtLon = geoPoint.longitude
+            val ime = document.getString("name")
+
+            Log.d("DISTANCAaaaaaaaaaa","MOja lokacija: ${latitude}, ${longitude}!!!" + " ${courtLon},${courtLat}" + " $ime")
+            val distance = haversine(latitude, longitude, courtLat, courtLon)
+            Log.d("DISTANCA","DISTANCA: ${distance} metara!!!" + " ${courtLon},${courtLat}" + " $ime")
+
+            if (distance <= 50) {
+                val court = document.toObject(Court::class.java)
+                nearbyCourts.add(court)
+            }
+        }
+
+        val filteredCourts = filterCourts(nearbyCourts)
+
+        if(filteredCourts.isNotEmpty())
+            addVisitedCourtsAndPoints(filteredCourts)
+
+        onComplete(filteredCourts)
+    }
+
+
+    suspend fun filterCourts(nearbyCourts: List<Court>,userId: String = auth.currentUser!!.uid): List<Court>{
+        val userFoundCourts = firestore.collection("foundCourts").document(userId).collection("courts")
+
+        val foundCourtsSnapshot = userFoundCourts.get().await()
+
+        val foundCourtIds = foundCourtsSnapshot.documents.map { it.id }.toSet()
+
+        return nearbyCourts.filter { court -> !foundCourtIds.contains(court.id) }
+    }
+
+    suspend fun addVisitedCourtsAndPoints(nearbyCourts: List<Court>, userId: String = auth.currentUser!!.uid){
+        val userFoundCourts = foundCourts.document(userId).collection("courts")
+        val batch = firestore.batch()
+
+        nearbyCourts.forEach { court ->
+            val courtRef = userFoundCourts.document(court.id!!)
+            batch.set(courtRef, court)
+        }
+
+        val points = nearbyCourts.size.toLong()
+        val userRef = users.document(userId)
+        batch.update(userRef,"points",FieldValue.increment(points))
+
+        try {
+            batch.commit().await()
+        } catch (e: Exception) {
+            Log.d("GRESKA_PRI_DODAVAJU_POSECENIH_TERENA","Greska pri dodavanju posecenih terena: ${e.message}")
+        }
     }
 
     /**

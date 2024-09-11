@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.aplikacijazasportsketerene.DataClasses.Court
+import com.example.aplikacijazasportsketerene.Location.CourtsService
 import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
 import com.example.aplikacijazasportsketerene.Location.UsersService
@@ -86,6 +87,10 @@ class MainActivity : ComponentActivity() {
             startService(this)
         }
         Intent(applicationContext, UsersService::class.java).apply {
+            action = UsersService.ACTION_STOP
+            startService(this)
+        }
+        Intent(applicationContext, CourtsService::class.java).apply {
             action = UsersService.ACTION_STOP
             startService(this)
         }

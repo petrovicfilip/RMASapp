@@ -84,7 +84,7 @@ class UsersService : Service() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val nearbyUsersChannel = NotificationChannel(
-            LocationService.NEARBY_USERS_CHANNEL_ID,
+            LocationService.NEARBY_USERS_CHANNEL_ID, // ovo je bitno za NotificationCompat
             "Nearby Users",
             NotificationManager.IMPORTANCE_HIGH
         )
@@ -96,7 +96,7 @@ class UsersService : Service() {
         serviceScope.launch(Dispatchers.IO) {
             while (true) { // proveriti da li postoji permission za lokaciju
                 checkNearbyUsers()
-                delay(17500) // staviti na oko 7.5 sec, povecano zbog smanjenja firebase upisa
+                delay(7500) // staviti na oko 7.5 sec, povecano zbog smanjenja firebase upisa
             }
         }
 
