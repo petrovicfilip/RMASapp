@@ -1,5 +1,6 @@
 package com.example.aplikacijazasportsketerene.UserInterface.NavBar
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,8 @@ import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,6 +46,7 @@ class NavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 45.dp)
+                .background(color = CardDefaults.cardColors().containerColor)
                 .drawBehind {
                     val borderSize = 2.dp.toPx()
                     drawLine(

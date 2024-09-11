@@ -1,7 +1,10 @@
 package com.example.aplikacijazasportsketerene.Services
 
 import android.net.Uri
+import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.FirebaseError
+import com.google.firebase.FirebaseException
 import com.google.firebase.storage.storage
 import com.google.firebase.storage.storageMetadata
 import kotlinx.coroutines.Dispatchers
@@ -36,11 +39,17 @@ class DatastoreService private constructor() {
     suspend fun downloadProfilePicture(userId: String) : Uri? {
         val img = datastore.child("users").child(userId).child("profilePicture").child("profilePicture.jpg")
 
-        val uri = img.downloadUrl.await()
+        try{
+            val uri = img.downloadUrl.await()
 //            .addOnSuccessListener {
 //                ProfileViewModel.getClassInstance().profilePicture = it
 //            }
-        return uri
+            return uri
+        }
+        catch (ex: FirebaseException){
+            Log.d("MUNEM","OPREM DOBRO")
+            return null
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import com.google.protobuf.BoolValueOrBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -497,25 +498,50 @@ class FirebaseDBService private constructor() {
     /**
      * LIKES DB CALLS
      **/
+    suspend fun likeCourt(userId: String,courtId: String): Boolean{
+        try {
+            val likeData = hashMapOf(
+                "userId" to userId,
+                "courtId" to courtId
+            )
 
+            likes.document("${userId}-${courtId}").set(likeData).await()
 
+            return true
+        }
+        catch (e: Exception) {
+            Log.d("LIKE_COURT","Greska pri like-u!?!?: ${e.message}")
+            return false
+        }
+    }
 
+    suspend fun dislikeCourt(userId: String,courtId: String): Boolean{
+        try {
+            Firebase.firestore.collection("likes").document("$userId-$courtId")
+                .delete()
+                .await()
 
+            return true
+        }
+        catch (e: Exception) {
+            Log.d("DISLIKE_COURT","Greska pri dislike-u!?!?: ${e.message}")
+            return false
+        }
+    }
 
+    suspend fun hasAlreadyLikedCourt(userId: String, courtId: String): Boolean{
+        try {
+            val queryResult = Firebase.firestore.collection("likes")
+                .whereEqualTo("userId",userId)
+                .whereEqualTo("courtId",courtId)
+                .get()
+                .await()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            return !queryResult.isEmpty
+        }
+        catch (e: Exception) {
+            Log.d("HAS_LIKED_COURT","Greska: ${e.message}")
+            return false
+        }
+    }
 }

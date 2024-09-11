@@ -3,6 +3,7 @@ package com.example.aplikacijazasportsketerene.UserInterface.Map
 import androidx.lifecycle.ViewModel
 
 
+
 class MapDrawerViewModel private constructor(): ViewModel() {
 
     companion object {

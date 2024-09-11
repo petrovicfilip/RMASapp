@@ -16,6 +16,7 @@ import com.example.aplikacijazasportsketerene.UserInterface.Home.HomeScreenViewM
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -46,6 +47,7 @@ class CourtViewModel(
     val courtRatedBy = mutableIntStateOf(court.ratedBy)
     val myRating = mutableIntStateOf(0)
     val reviewChecker = mutableStateOf(false)
+    val isLiked = mutableStateOf(false)
 
     val postingReview = mutableStateOf(false)
     val fetchingComments = mutableStateOf(false)
@@ -55,7 +57,8 @@ class CourtViewModel(
     var newComment = mutableStateOf<Comment>(Comment())
     val commentsAndReplies = mutableStateMapOf<Comment,List<Comment>?>()
 
-    private val mutex = Mutex()
+    private val mutexComments = Mutex()
+    private val mutexLikes = Mutex()
 
     /*companion object : SingletonViewModel<CourtViewModel>() {
         fun getInstance(court: Court) = getInstance(CourtViewModel::class.java) { CourtViewModel(court = court ) }
@@ -153,7 +156,7 @@ class CourtViewModel(
                   value: Int){
         viewModelScope.launch(Dispatchers.IO) {
 
-            mutex.withLock {
+            mutexComments.withLock {
                 FirebaseDBService.getClassInstance().addOrUpdateReview(uid, cid, value)
 
                 withContext(Dispatchers.Main){
@@ -195,6 +198,25 @@ class CourtViewModel(
             }
         }
 
+    }
+
+    fun likeOrDislikeCourt(userId: String,courtId: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            mutexLikes.withLock {
+                if (isLiked.value) // nema potrebe vracati se na main dispatcher radi ove provere...
+                    FirebaseDBService.getClassInstance().likeCourt(userId, courtId)
+                else
+                    FirebaseDBService.getClassInstance().dislikeCourt(userId, courtId)
+            }
+        }
+
+    }
+
+    fun hasUserLikedCourt(userId: String, courtId: String){
+        viewModelScope.launch(Dispatchers.IO){
+            isLiked.value = FirebaseDBService.getClassInstance().hasAlreadyLikedCourt(userId, courtId)
+
+        }
     }
 
     /*fun getCourt(cid: String) {

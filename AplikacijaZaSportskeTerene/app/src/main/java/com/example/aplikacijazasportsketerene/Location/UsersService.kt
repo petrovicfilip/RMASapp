@@ -93,7 +93,7 @@ class UsersService : Service() {
 
         // ...
 
-        serviceScope.launch {
+        serviceScope.launch(Dispatchers.IO) {
             while (true) { // proveriti da li postoji permission za lokaciju
                 checkNearbyUsers()
                 delay(17500) // staviti na oko 7.5 sec, povecano zbog smanjenja firebase upisa
@@ -102,64 +102,63 @@ class UsersService : Service() {
 
     }
 
-    private fun checkNearbyUsers() {
-        serviceScope.launch{
-            if(currentUserLocation.location.value == null || Firebase.auth.currentUser == null)
-                return@launch
+    suspend fun checkNearbyUsers() {
+        if (currentUserLocation.location.value == null || Firebase.auth.currentUser == null)
+            return
 
-            FirebaseDBService.getClassInstance().findNearbyUsers(
-                currentUserLocation.location.value!!.latitude,
-                currentUserLocation.location.value!!.latitude
-            ) { nearbyUsers ->
+        FirebaseDBService.getClassInstance().findNearbyUsers(
+            currentUserLocation.location.value!!.latitude,
+            currentUserLocation.location.value!!.latitude
+        ) { nearbyUsers ->
 
-                val newNearbyUsers = PersistedNearbyUsers.getClassInstance().filterAndUpdateList(nearbyUsers)
-                //val newNearbyUsers = nearbyUsers
+            val newNearbyUsers =
+                PersistedNearbyUsers.getClassInstance().filterAndUpdateList(nearbyUsers)
+            //val newNearbyUsers = nearbyUsers
 
-                if (newNearbyUsers.isNotEmpty() && !isAppInForeground()) {
-                    val userCount = newNearbyUsers.size
+            if (newNearbyUsers.isNotEmpty() && !isAppInForeground()) {
+                val userCount = newNearbyUsers.size
 
 
-                    val resultIntent = Intent(this@UsersService, MainActivity::class.java)
-                    val stackBuilder = TaskStackBuilder.create(this@UsersService)
-                    stackBuilder.addNextIntentWithParentStack(resultIntent)
+                val resultIntent = Intent(this@UsersService, MainActivity::class.java)
+                val stackBuilder = TaskStackBuilder.create(this@UsersService)
+                stackBuilder.addNextIntentWithParentStack(resultIntent)
 
-                    val resultPendingIntent = stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                val resultPendingIntent = stackBuilder.getPendingIntent(
+                    0,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+
+                val markAsReadIntent = Intent(this@UsersService, LocationService::class.java)
+                markAsReadIntent.action = MARK_AS_READ
+                val markAsReadPendingIntent = PendingIntent.getService(
+                    this@UsersService,
+                    1,
+                    markAsReadIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+
+                val nearbyUsersNotificationManager =
+                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+                val nearbyUsersNotification = NotificationCompat.Builder(
+                    applicationContext,
+                    LocationService.NEARBY_USERS_CHANNEL_ID
+                )
+                    .setContentTitle("Novi korisnici u blizini!")
+                    .setContentText("Broj novih korisnika u blizini: $userCount")
+                    .setSmallIcon(android.R.drawable.ic_dialog_map)
+                    .setContentIntent(resultPendingIntent)
+                    .addAction(
+                        android.R.drawable.ic_menu_close_clear_cancel,
+                        "TO BE IMPLEMENTED",
+                        markAsReadPendingIntent
                     )
+                    .setAutoCancel(true)
+                    .setOngoing(false)
 
-
-                    val markAsReadIntent = Intent(this@UsersService, LocationService::class.java)
-                    markAsReadIntent.action = MARK_AS_READ
-                    val markAsReadPendingIntent = PendingIntent.getService(
-                        this@UsersService,
-                        1,
-                        markAsReadIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-
-
-                    val nearbyUsersNotificationManager =
-                        getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-                    val nearbyUsersNotification = NotificationCompat.Builder(
-                        applicationContext,
-                        LocationService.NEARBY_USERS_CHANNEL_ID
-                    )
-                        .setContentTitle("Novi korisnici u blizini!")
-                        .setContentText("Broj novih korisnika u blizini: $userCount")
-                        .setSmallIcon(android.R.drawable.ic_dialog_map)
-                        .setContentIntent(resultPendingIntent)
-                        .addAction(
-                            android.R.drawable.ic_menu_close_clear_cancel,
-                            "TO BE IMPLEMENTED",
-                            markAsReadPendingIntent
-                        )
-                        .setAutoCancel(true)
-                        .setOngoing(false)
-
-                    nearbyUsersNotificationManager.notify(2, nearbyUsersNotification.build())
-                }
+                nearbyUsersNotificationManager.notify(2, nearbyUsersNotification.build())
             }
         }
     }

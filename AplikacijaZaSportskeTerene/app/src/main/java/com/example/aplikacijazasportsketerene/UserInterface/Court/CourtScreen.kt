@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.example.aplikacijazasportsketerene.UserInterface.Court
 
 import android.annotation.SuppressLint
@@ -40,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +57,9 @@ import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.SingletonViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.Court.Comments.CommentsSection
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
 
 @Composable
 fun CourtScreen(
@@ -76,6 +82,7 @@ fun CourtScreen(
         courtViewModel.getMyReviewAndUpdateReviewChecker(cid = court.id!!)
         courtViewModel.getImages(court.id)
         courtViewModel.getUser()
+        courtViewModel.hasUserLikedCourt(Firebase.auth.currentUser!!.uid,court.id)
         //courtViewModel.set()
     }
 
@@ -331,7 +338,7 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
                                                 else
                                                     painterResource(id = R.drawable.baseline_star_outline_24),
                                                 contentDescription = "Ocena $i",
-                                                tint = MaterialTheme.colorScheme.secondary,
+                                                tint = Color.Yellow,
                                                 modifier = Modifier.size(40.dp)
                                             )
                                         else
@@ -341,7 +348,7 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
                                                 else
                                                     painterResource(id = R.drawable.baseline_star_outline_24),
                                                 contentDescription = "Ocena $i",
-                                                tint = MaterialTheme.colorScheme.secondary,
+                                                tint = Color.Yellow,
                                                 modifier = Modifier.size(40.dp)
                                             )
                                     }
@@ -380,6 +387,30 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
                             )
                         }
                     }
+                }
+            }
+
+            item{
+                Spacer(modifier = Modifier.height(16.dp))
+                IconButton(
+                    onClick = {
+                        courtViewModel.isLiked.value = !courtViewModel.isLiked.value
+                            courtViewModel.likeOrDislikeCourt(courtId = court.id!!, userId = Firebase.auth.currentUser!!.uid)
+                    }) {
+                    if (!courtViewModel.isLiked.value)
+                        Icon(
+                            painter = painterResource((R.drawable.baseline_favorite_border_24)),
+                            contentDescription = "Like",
+                            modifier = Modifier
+                                .size(40.dp)
+                        )
+                    else
+                        Icon(
+                            painter = painterResource((R.drawable.baseline_favorite_24)),
+                            contentDescription = "Like",
+                            modifier = Modifier
+                                .size(40.dp)
+                        )
                 }
             }
 

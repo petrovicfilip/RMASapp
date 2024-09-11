@@ -24,6 +24,7 @@
         tools:targetApi="31">
         <service android:name=".Location.LocationService" android:foregroundServiceType="location"/>
         <service android:name=".Location.UsersService" android:foregroundServiceType="specialUse"/>
+        <service android:name=".Location.CourtsService" android:foregroundServiceType="specialUse"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
