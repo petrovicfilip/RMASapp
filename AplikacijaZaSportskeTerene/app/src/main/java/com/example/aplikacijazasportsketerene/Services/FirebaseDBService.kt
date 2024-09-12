@@ -2,17 +2,21 @@ package com.example.aplikacijazasportsketerene.Services
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.geometry.CornerRadius
+import com.example.aplikacijazasportsketerene.DataClasses.BoundingBox
 import com.example.aplikacijazasportsketerene.DataClasses.Comment
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.DataClasses.Review
 import com.example.aplikacijazasportsketerene.DataClasses.User
 import com.example.aplikacijazasportsketerene.DataClasses.calculateBoundingBox
 import com.example.aplikacijazasportsketerene.DataClasses.haversine
+import com.example.aplikacijazasportsketerene.Location.CurrentUserLocation
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +30,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.sql.Time
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -605,4 +610,60 @@ class FirebaseDBService private constructor() {
             return false
         }
     }
+
+    /**
+     * FIlTER & SEARCH DB CALLS
+     **/
+
+    // search type: naziv,grad,ulica,korisnik,radius
+    // filteri: tip terena,datum postavljanja,minimalna ocena
+
+    suspend fun searchForCourts(
+        name: String = "",
+        city: String = "",
+        street: String = "",
+        radius: Int = 0,
+
+        types: List<String?>,
+        dateBeginning: Timestamp? = null,
+        dateEnd: Timestamp? = null,
+        minimumRating: Int = 0
+    ): List<Court> {
+        var query: Query = courts
+
+        if(name != "") {
+            query = courts.whereEqualTo("name",name)
+        }
+        else if(city != "") {
+            query = courts.whereEqualTo("city",city)
+        }
+        else if(street != "") {
+            query = courts.whereEqualTo("street",street)
+        }
+        else if(radius > 0) {
+            val boundingBox = calculateBoundingBox(CurrentUserLocation.getClassInstance().location.value!!.latitude,
+                CurrentUserLocation.getClassInstance().location.value!!.latitude,radius.toDouble())
+
+            query = query
+                .whereGreaterThanOrEqualTo("latLon", GeoPoint(boundingBox.minLat, boundingBox.minLon))
+                .whereLessThanOrEqualTo("latLon", GeoPoint(boundingBox.maxLat, boundingBox.maxLon))
+        }
+        if(types.isNotEmpty()) {
+            val limitedTypes = if (types.size > 10) types.take(10) else types
+            query = query.whereIn("type", limitedTypes)
+        }
+
+        if(dateBeginning != null && dateEnd != null) {
+            query = query.whereGreaterThan("date", dateBeginning)
+            query = query.whereLessThan("date", dateEnd)
+        }
+
+        if(minimumRating > 0)
+            query = query.whereEqualTo("rating",minimumRating)
+
+        val results = query.get().await()
+
+        return results.mapNotNull { it.toObject<Court>() }
+    }
+
 }

@@ -5,6 +5,7 @@ import android.content.IntentSender.OnFinished
 import android.location.Geocoder
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -33,9 +34,9 @@ class AddCourtViewModel private constructor(): ViewModel() {
 
     val description = mutableStateOf("")
 
-    val latitude = mutableStateOf(0f)
+    val latitude = mutableFloatStateOf(0f)
 
-    val longitude = mutableStateOf(0f)
+    val longitude = mutableFloatStateOf(0f)
     
     val city = mutableStateOf("")
     
@@ -70,8 +71,8 @@ class AddCourtViewModel private constructor(): ViewModel() {
     }
 
     fun setCoordinates(lat: Float, lon: Float) {
-        latitude.value = lat
-        longitude.value = lon
+        latitude.floatValue = lat
+        longitude.floatValue = lon
     }
 
     fun updateStreetsMenuExpanded(update: Boolean){
@@ -102,7 +103,7 @@ class AddCourtViewModel private constructor(): ViewModel() {
                     description = description.value,
                     city = city.value,
                     street = street.value,
-                    latLon = GeoPoint(latitude.value.toDouble(), longitude.value.toDouble())
+                    latLon = GeoPoint(latitude.floatValue.toDouble(), longitude.floatValue.toDouble())
                 ),
                 courtImagesUris.toList(), onUploadFinished
             )

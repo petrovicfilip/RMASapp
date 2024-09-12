@@ -1,6 +1,7 @@
 package com.example.aplikacijazasportsketerene.Location
 
 import android.app.ActivityManager
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -87,6 +88,8 @@ class CourtsService : Service() {
         notificationManager.createNotificationChannel(nearbyCourtsChannel)
         notificationManager.createNotificationChannel(nearbyCourtsPermanentChannel)
         notificationManager.notify(4,notification.build())
+
+        startForeground(4, notification.build())
 
         serviceScope.launch(Dispatchers.IO) {
             while (true) { // proveriti da li postoji permission za lokaciju

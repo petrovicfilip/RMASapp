@@ -37,6 +37,8 @@ import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScree
 import com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen.ProfilePage
 import com.example.aplikacijazasportsketerene.UserInterface.Splash.SplashScreen
 import com.example.aplikacijazasportsketerene.UserInterface.LogIn.LogInScreen
+import com.example.aplikacijazasportsketerene.UserInterface.Search.SearchScreen
+import com.example.aplikacijazasportsketerene.UserInterface.Search.ViewMapForSearchedCourts
 import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 import com.google.gson.Gson
@@ -123,7 +125,7 @@ class MainActivity : ComponentActivity() {
             navigateToLikedCourtsPage = {
                 navController.popBackStack(Screen.Courts.name, inclusive = true)
                 navController.navigate(Screen.Courts.name)
-            }
+            },
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -142,13 +144,6 @@ class MainActivity : ComponentActivity() {
                         HomePage(
                             navController = navController,
                             applicationContext = applicationContext,
-                            navigationBar = navigationBar
-                        )
-                    }
-                    composable(Screen.Search.name) {
-                        SearchPage(
-                            navController = navController,
-                            context = applicationContext,
                             navigationBar = navigationBar
                         )
                     }
@@ -196,6 +191,18 @@ class MainActivity : ComponentActivity() {
                         val court = Gson().fromJson(courtJson, Court::class.java)
                         court?.let { CourtScreen(court = it, navController = navController) }
                     }
+                    composable(Screen.Search.name){
+                        SearchScreen(navController = navController)
+                    }
+                    composable(
+                        route = "${Screen.SearchedCourts.name}/{court}",
+                        arguments = listOf(navArgument("court") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val courtJson = backStackEntry.arguments?.getString("court")
+                        val court = Gson().fromJson(courtJson, Court::class.java)
+                        ViewMapForSearchedCourts(court)
+                    }
+
                 }
             }
         }
@@ -216,17 +223,6 @@ class MainActivity : ComponentActivity() {
         Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Courts.name) }) {
         }
     }
-
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    @Composable
-    private fun SearchPage(
-        navController: NavController,
-        context: Context?,
-        navigationBar: NavigationBar
-    ) {
-        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Search.name) }) {
-        }
-    }
 }
 enum class Screen {
     LogIn,
@@ -239,5 +235,6 @@ enum class Screen {
     Players,
     Loading,
     AddCourt,
-    Court
+    Court,
+    SearchedCourts
 }

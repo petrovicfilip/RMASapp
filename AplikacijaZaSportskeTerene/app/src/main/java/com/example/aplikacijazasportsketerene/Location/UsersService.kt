@@ -1,6 +1,7 @@
 package com.example.aplikacijazasportsketerene.Location
 
 import android.app.ActivityManager
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -11,6 +12,7 @@ import android.content.Intent
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.aplikacijazasportsketerene.DataClasses.User
@@ -86,23 +88,31 @@ class UsersService : Service() {
         val nearbyUsersChannel = NotificationChannel(
             LocationService.NEARBY_USERS_CHANNEL_ID, // ovo je bitno za NotificationCompat
             "Nearby Users",
-            NotificationManager.IMPORTANCE_HIGH
+            NotificationManager.IMPORTANCE_LOW
         )
         nearbyUsersChannel.description = "Kanal za obavestenja o korisnicima u blizini"
         notificationManager.createNotificationChannel(nearbyUsersChannel)
 
+        val notification = NotificationCompat.Builder(this, LocationService.NEARBY_USERS_CHANNEL_ID)
+            .setContentTitle("Pracenje bliskih korisnika...")
+            .setSmallIcon(android.R.drawable.ic_dialog_map)
+            .setOngoing(true)
+            //.setContentIntent(resultPendingIntent)  // Ensures app opens when clicked
+            .build()
         // ...
 
+        startForeground(2, notification)
         serviceScope.launch(Dispatchers.IO) {
             while (true) { // proveriti da li postoji permission za lokaciju
-                checkNearbyUsers()
+                checkNearbyUsers(notification)
+                Log.d("RADI SERVIS KORISNIKA","RADIIIIII SERVISS KORSINIKA")
                 delay(7500) // staviti na oko 7.5 sec, povecano zbog smanjenja firebase upisa
             }
         }
 
     }
 
-    suspend fun checkNearbyUsers() {
+    suspend fun checkNearbyUsers(notification: Notification) {
         if (currentUserLocation.location.value == null || Firebase.auth.currentUser == null)
             return
 
@@ -159,6 +169,10 @@ class UsersService : Service() {
                     .setOngoing(false)
 
                 nearbyUsersNotificationManager.notify(2, nearbyUsersNotification.build())
+            }
+            else {
+                val nearbyUsersNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                nearbyUsersNotificationManager.notify(2, notification)
             }
         }
     }

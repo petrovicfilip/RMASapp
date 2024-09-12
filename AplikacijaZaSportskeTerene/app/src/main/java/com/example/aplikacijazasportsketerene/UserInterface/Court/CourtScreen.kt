@@ -59,7 +59,6 @@ import com.example.aplikacijazasportsketerene.SingletonViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.Court.Comments.CommentsSection
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.firestore
 
 @Composable
 fun CourtScreen(

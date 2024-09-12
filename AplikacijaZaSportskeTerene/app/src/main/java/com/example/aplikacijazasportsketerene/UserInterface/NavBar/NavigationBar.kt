@@ -38,7 +38,7 @@ class NavigationBar(
     private val navigateToSearchingPage: () -> Unit,
     private val navigateToLikedCourtsPage: () -> Unit,
     private val navigateToPlayersPage: () -> Unit,
-    private val navigateToProfilePage: () -> Unit
+    private val navigateToProfilePage: () -> Unit,
 ) {
     @Composable
     fun Draw(currentScreen: String?) {
@@ -55,7 +55,6 @@ class NavigationBar(
                         end = Offset(size.width, borderSize / 2),
                         strokeWidth = borderSize
                     )
-
                 }
 
         ) {
