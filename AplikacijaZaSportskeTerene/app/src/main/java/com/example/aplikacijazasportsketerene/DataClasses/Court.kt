@@ -13,6 +13,7 @@ data class Court(
 
     val rating: Int = 0,
     val ratedBy: Int = 0,
+    val averageRating: Double = 0.0, // ipak mi treba...
 
     val latLon: GeoPoint = GeoPoint(0.0,0.0),
     val street: String = "",

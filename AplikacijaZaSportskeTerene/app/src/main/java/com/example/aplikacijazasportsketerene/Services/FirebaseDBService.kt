@@ -370,6 +370,20 @@ class FirebaseDBService private constructor() {
                     .document(courtId)
                     .update("ratedBy",FieldValue.increment(1),
                         "rating",FieldValue.increment(value.toLong()))
+                     .await()
+                // ipak mi treba polje averageRating...zbog filtera, ne moze drugacije barem da ja znam...
+                val court = courts
+                    .document(courtId)
+                    .get()
+                    .await()
+
+                val rating = court.get("rating").toString().toDouble()
+                val ratedBy = court.get("ratedBy").toString().toDouble()
+
+                courts
+                    .document(courtId)
+                    .update("averageRating",rating / ratedBy)
+                    .await()
 
                 return true
             }
@@ -383,6 +397,19 @@ class FirebaseDBService private constructor() {
                 courts
                     .document(courtId)
                     .update("rating",value)
+
+                val court = courts
+                    .document(courtId)
+                    .get()
+                    .await()
+
+                val rating = court.get("rating").toString().toDouble()
+                val ratedBy = court.get("ratedBy").toString().toDouble()
+
+                courts
+                    .document(courtId)
+                    .update("averageRating",rating / ratedBy)
+                    .await()
 
                 return true
             }
@@ -648,6 +675,7 @@ class FirebaseDBService private constructor() {
                 .whereGreaterThanOrEqualTo("latLon", GeoPoint(boundingBox.minLat, boundingBox.minLon))
                 .whereLessThanOrEqualTo("latLon", GeoPoint(boundingBox.maxLat, boundingBox.maxLon))
         }
+
         if(types.isNotEmpty()) {
             val limitedTypes = if (types.size > 10) types.take(10) else types
             query = query.whereIn("type", limitedTypes)
@@ -659,7 +687,7 @@ class FirebaseDBService private constructor() {
         }
 
         if(minimumRating > 0)
-            query = query.whereEqualTo("rating",minimumRating)
+            query = query.whereGreaterThanOrEqualTo("averageRating",minimumRating)
 
         val results = query.get().await()
 

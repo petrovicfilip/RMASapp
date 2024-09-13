@@ -20,17 +20,12 @@ class SearchViewModel private constructor(): ViewModel() {
         fun getInstance() = getInstance(SearchViewModel::class.java) { SearchViewModel() }
     }
     var searchType by mutableStateOf(SearchTipovi.Ime)
-
     var searchInput by mutableStateOf("")
 
     var selectedTypes by mutableStateOf(listOf<String?>())
-
     var dateBeginning by mutableStateOf<Timestamp?>(null)
-
     var dateEnd by mutableStateOf<Timestamp?>(null)
-
     var minimumRating by mutableIntStateOf(0)
-
     var searchResults by mutableStateOf(listOf<Court>())
 
     fun searchCourts() {
@@ -49,6 +44,10 @@ class SearchViewModel private constructor(): ViewModel() {
                 )
             }
         }
+    }
+
+    fun checkIfNoFiltersAreApplied(): Boolean{
+      return selectedTypes.isEmpty() && dateBeginning == null && dateEnd == null && minimumRating == 0
     }
 }
 

@@ -37,6 +37,7 @@ import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScree
 import com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen.ProfilePage
 import com.example.aplikacijazasportsketerene.UserInterface.Splash.SplashScreen
 import com.example.aplikacijazasportsketerene.UserInterface.LogIn.LogInScreen
+import com.example.aplikacijazasportsketerene.UserInterface.Search.FilterScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Search.SearchScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Search.ViewMapForSearchedCourts
 import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpScreen
@@ -192,7 +193,7 @@ class MainActivity : ComponentActivity() {
                         court?.let { CourtScreen(court = it, navController = navController) }
                     }
                     composable(Screen.Search.name){
-                        SearchScreen(navController = navController)
+                        SearchScreen(navController = navController, context = context)
                     }
                     composable(
                         route = "${Screen.SearchedCourts.name}/{court}",
@@ -202,7 +203,9 @@ class MainActivity : ComponentActivity() {
                         val court = Gson().fromJson(courtJson, Court::class.java)
                         ViewMapForSearchedCourts(court)
                     }
-
+                    composable(Screen.Filter.name){
+                        FilterScreen(navController = navController)
+                    }
                 }
             }
         }
@@ -236,5 +239,6 @@ enum class Screen {
     Loading,
     AddCourt,
     Court,
-    SearchedCourts
+    SearchedCourts,
+    Filter
 }
