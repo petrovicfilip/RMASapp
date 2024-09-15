@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
@@ -55,6 +56,7 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.R
+import com.example.aplikacijazasportsketerene.Screen
 import com.example.aplikacijazasportsketerene.SingletonViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.Court.Comments.CommentsSection
 import com.google.firebase.Firebase
@@ -92,7 +94,7 @@ fun CourtScreen(
     }
 
         courtViewModel.court.value?.let {
-            CourtDetails(it, courtViewModel.images,courtViewModel)
+            CourtDetails(it, courtViewModel.images,courtViewModel,navController)
         } ?: run {
             Text("Teren nije pronadjen.")
         }
@@ -100,7 +102,10 @@ fun CourtScreen(
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewModel) {
+fun CourtDetails(
+    court: Court, images: List<Uri?>,
+    courtViewModel: CourtViewModel,
+    navController: NavController) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
     ) { _ ->
@@ -391,26 +396,45 @@ fun CourtDetails(court: Court, images: List<Uri?>, courtViewModel: CourtViewMode
 
             item{
                 Spacer(modifier = Modifier.height(16.dp))
-                IconButton(
-                    onClick = {
-                        courtViewModel.isLiked.value = !courtViewModel.isLiked.value
-                        val likeOrDislike = courtViewModel.isLiked.value // bravo za mene
-                            courtViewModel.likeOrDislikeCourt(court = court, userId = Firebase.auth.currentUser!!.uid,likeOrDislike = likeOrDislike)
-                    }) {
-                    if (!courtViewModel.isLiked.value)
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    IconButton(
+                        onClick = {
+                            courtViewModel.isLiked.value = !courtViewModel.isLiked.value
+                            val likeOrDislike = courtViewModel.isLiked.value // bravo za mene
+                            courtViewModel.likeOrDislikeCourt(
+                                court = court,
+                                userId = Firebase.auth.currentUser!!.uid,
+                                likeOrDislike = likeOrDislike
+                            )
+                        }) {
+                        if (!courtViewModel.isLiked.value)
+                            Icon(
+                                painter = painterResource((R.drawable.baseline_favorite_border_24)),
+                                contentDescription = "Like",
+                                modifier = Modifier
+                                    .size(40.dp)
+                            )
+                        else
+                            Icon(
+                                painter = painterResource((R.drawable.baseline_favorite_24)),
+                                contentDescription = "Like",
+                                modifier = Modifier
+                                    .size(40.dp)
+                            )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = {
+                            navController.navigate("${Screen.UsersProfile.name}/${court.userId}")
+                        }) {
                         Icon(
-                            painter = painterResource((R.drawable.baseline_favorite_border_24)),
-                            contentDescription = "Like",
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profil postavljaca",
                             modifier = Modifier
-                                .size(40.dp)
-                        )
-                    else
-                        Icon(
-                            painter = painterResource((R.drawable.baseline_favorite_24)),
-                            contentDescription = "Like",
-                            modifier = Modifier
-                                .size(40.dp)
-                        )
+                                .size(40.dp))
+                    }
                 }
             }
 

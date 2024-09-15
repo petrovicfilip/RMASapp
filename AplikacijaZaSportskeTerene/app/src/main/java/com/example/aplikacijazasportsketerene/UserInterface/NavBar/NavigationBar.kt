@@ -83,13 +83,13 @@ class NavigationBar(
                     else ImageVector.vectorResource(id = R.drawable.baseline_people_outline_24),
                     modifier = Modifier.weight(2f)
                 )
-                TransparentIconButton(
+                /*TransparentIconButton(
                     onClick = navigateToLikedCourtsPage,
                     icon = if(currentScreen == Screen.Courts.name)
                         Icons.Filled.Place
                     else Icons.Outlined.Place,
                     modifier = Modifier.weight(2f)
-                )
+                )*/
                 TransparentIconButton(
                     onClick = navigateToProfilePage,
                     icon = if(currentScreen == Screen.Profile.name)

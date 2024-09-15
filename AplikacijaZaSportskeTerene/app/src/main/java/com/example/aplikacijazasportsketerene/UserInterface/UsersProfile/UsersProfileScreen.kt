@@ -1,8 +1,7 @@
-package com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen
+@file:Suppress("UNCHECKED_CAST")
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
+package com.example.aplikacijazasportsketerene.UserInterface.UsersProfile
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -29,7 +28,6 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -45,41 +43,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.aplikacijazasportsketerene.Location.CourtsService
-import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.Screen
-import com.example.aplikacijazasportsketerene.Services.AccountService
-import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ProfilePage(
-    navController: NavController,
-    context: Context?,
-    navigationBar: NavigationBar,
-    ) {
-    val profileViewModel = ProfileViewModel.getClassInstance()
-
-    LaunchedEffect(Unit) {
-        profileViewModel.loadUserData()
+fun UsersProfileScreen(
+    userId: String,
+    usersProfileScreenViewModel: UsersProfileScreenViewModel = viewModel<UsersProfileScreenViewModel>(
+        factory = object : ViewModelProvider.Factory{
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return UsersProfileScreenViewModel()
+                        as T
+            }
+        }
+    ),
+    navController: NavController
+) {
+    LaunchedEffect(userId) {
+        usersProfileScreenViewModel.loadUserData(userId)
     }
 
     Scaffold(
-        bottomBar = { navigationBar.Draw(currentScreen = Screen.Profile.name) },
         modifier = Modifier
             .fillMaxSize()
     ) {
-        if (profileViewModel.profilePicture == null)
-            profileViewModel.getUserProfilePicture()
+        if (usersProfileScreenViewModel.profilePicture == null)
+            usersProfileScreenViewModel.getUserProfilePicture(userId)
         Spacer(modifier = Modifier.height(15.dp))
         Column(
             Modifier
@@ -103,13 +100,14 @@ fun ProfilePage(
                         .padding(8.dp),
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp)
-                ){
-                    Box(modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                    ){
-                        if (profileViewModel.profilePicture != null) {
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        if (usersProfileScreenViewModel.profilePicture != null) {
                             Image(
-                                painter = rememberAsyncImagePainter(profileViewModel.profilePicture),
+                                painter = rememberAsyncImagePainter(usersProfileScreenViewModel.profilePicture),
                                 contentDescription = null,
                                 modifier = Modifier
                                     .padding(10.dp)
@@ -125,9 +123,10 @@ fun ProfilePage(
                                 contentScale = ContentScale.Crop,
                             )
                         } else {
-                            CircularProgressIndicator(modifier = Modifier
-                                .padding(10.dp)
-                                .size(128.dp)
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .size(128.dp)
                             )
                         }
                     }
@@ -146,8 +145,11 @@ fun ProfilePage(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    colors = CardColors(containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.Black, disabledContentColor = MaterialTheme.colorScheme.primary, disabledContainerColor = Color.Gray
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.Black,
+                        disabledContentColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = Color.Gray
                     ),
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp)
@@ -170,7 +172,7 @@ fun ProfilePage(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
-                                text = profileViewModel.username.value,
+                                text = usersProfileScreenViewModel.username.value,
                                 style = MaterialTheme.typography.bodyMedium
                             )
 
@@ -185,8 +187,11 @@ fun ProfilePage(
                         .padding(8.dp),
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = CardColors(containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.Black, disabledContentColor = MaterialTheme.colorScheme.primary, disabledContainerColor = Color.Gray
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.Black,
+                        disabledContentColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = Color.Gray
                     ),
                 ) {
                     Row(
@@ -207,7 +212,7 @@ fun ProfilePage(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
-                                text = profileViewModel.firstName.value + " " + profileViewModel.lastName.value,
+                                text = usersProfileScreenViewModel.firstName.value + " " + usersProfileScreenViewModel.lastName.value,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -220,9 +225,12 @@ fun ProfilePage(
                         .padding(8.dp),
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = CardColors(containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.Black, disabledContentColor = MaterialTheme.colorScheme.primary, disabledContainerColor = Color.Gray
-                ),
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.Black,
+                        disabledContentColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = Color.Gray
+                    ),
                 ) {
                     Row(
                         modifier = Modifier
@@ -242,7 +250,7 @@ fun ProfilePage(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
-                                text = profileViewModel.phoneNumber.value,
+                                text = usersProfileScreenViewModel.phoneNumber.value,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -255,8 +263,11 @@ fun ProfilePage(
                         .padding(8.dp),
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = CardColors(containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.Black, disabledContentColor = MaterialTheme.colorScheme.primary, disabledContainerColor = Color.Gray
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.Black,
+                        disabledContentColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = Color.Gray
                     ),
                 ) {
                     Row(
@@ -277,7 +288,7 @@ fun ProfilePage(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
-                                text = profileViewModel.email.value,
+                                text = usersProfileScreenViewModel.email.value,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -290,8 +301,11 @@ fun ProfilePage(
                         .padding(8.dp),
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = CardColors(containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.Black, disabledContentColor = MaterialTheme.colorScheme.primary, disabledContainerColor = Color.Gray
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.Black,
+                        disabledContentColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = Color.Gray
                     )
                 ) {
                     Row(
@@ -312,7 +326,7 @@ fun ProfilePage(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
-                                text = profileViewModel.points.doubleValue.toString(),
+                                text = usersProfileScreenViewModel.points.doubleValue.toString(),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -323,19 +337,21 @@ fun ProfilePage(
                         .fillMaxWidth()
                         .padding(8.dp)
                         .clickable {
-                            navController.navigate("${Screen.PostedCourts.name}/${Firebase.auth.currentUser!!.uid}")
+                            navController.navigate("${Screen.PostedCourts.name}/${userId}")
                         },
                     elevation = CardDefaults.cardElevation(4.dp),
                     shape = RoundedCornerShape(8.dp),
-                    colors = CardColors(containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.Black, disabledContentColor = MaterialTheme.colorScheme.primary, disabledContainerColor = Color.Gray
+                    colors = CardColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.Black,
+                        disabledContentColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = Color.Gray
                     ),
                 ) {
                     Row(
                         modifier = Modifier
                             .padding(16.dp)
-                            .fillMaxWidth()
-                            ,
+                            .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                             Icon(
@@ -350,54 +366,13 @@ fun ProfilePage(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
-                                text = profileViewModel.points.doubleValue.toString(),
+                                text = usersProfileScreenViewModel.points.doubleValue.toString(),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
                 }
             }
-
-
-            Column(
-                //horizontalAlignment = Alignment.Start,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(5.dp)
-            ){
-                Button(
-                    modifier = Modifier.padding(5.dp),
-                    onClick = {
-                    profileViewModel.findingCourtsStarted.value =
-                        !profileViewModel.findingCourtsStarted.value
-
-                    if (profileViewModel.findingCourtsStarted.value) {
-                        Intent(context, CourtsService::class.java).apply {
-                            action = LocationService.ACTION_START
-                            context?.startService(this)
-                        }
-                    } else {
-                        Intent(context, CourtsService::class.java).apply {
-                            action = LocationService.ACTION_STOP
-                            context?.startService(this)
-                        }
-                    }
-                }) {
-                    if (!profileViewModel.findingCourtsStarted.value)
-                        Text(text = "Pokreni trazenje terena")
-                    else
-                        Text(text = "Zaustavi trazenje terena")
-                }
-
-                Button(
-                    modifier = Modifier.padding(5.dp),
-                    onClick = {
-                    AccountService.getClassInstance().signOut()
-                }) {
-                    Text(text = "Odjavi se")
-                }
-            }
         }
-
     }
 }

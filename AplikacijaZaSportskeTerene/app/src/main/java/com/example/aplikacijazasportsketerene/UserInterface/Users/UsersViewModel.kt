@@ -37,6 +37,8 @@ class UsersScreenViewModel : ViewModel() {
             val sortedUsers = FirebaseDBService.getClassInstance().getUsersSortedByPoints()
 
             withContext(Dispatchers.Main){
+                if(users.size > 0)
+                    users.clear()
                 users.addAll(sortedUsers)
                 loadingUsers.value = false
             }

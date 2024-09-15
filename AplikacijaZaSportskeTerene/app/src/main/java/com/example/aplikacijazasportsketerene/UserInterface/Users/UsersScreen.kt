@@ -48,7 +48,7 @@ fun UsersScreen(
     navigationBar: NavigationBar,
     navController: NavController) {
 
-    //usersScreenViewModel.loadUsers()
+    usersScreenViewModel.loadUsers()
 
     Scaffold(
         topBar = {
@@ -64,7 +64,7 @@ fun UsersScreen(
         },
         bottomBar = { navigationBar.Draw(currentScreen = Screen.Users.name) }
     ) { padding ->
-        if(usersScreenViewModel.loadingUsers.value == false){
+        if(!usersScreenViewModel.loadingUsers.value){
             LazyColumn(
                 contentPadding = padding,
                 modifier = Modifier

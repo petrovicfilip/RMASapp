@@ -290,6 +290,17 @@ class FirebaseDBService private constructor() {
         return toReturn
     }
 
+    suspend fun getUsersCourts(userId: String = auth.currentUser!!.uid): List<Court>{
+            val foundCourts = courts
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+
+        val toReturn = foundCourts.mapNotNull { it.toObject<Court>() }
+
+        return toReturn
+    }
+
     suspend fun findNearbyCourts(
         latitude: Double,
         longitude: Double,

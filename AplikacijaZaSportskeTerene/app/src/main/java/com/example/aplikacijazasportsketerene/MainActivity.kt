@@ -41,7 +41,9 @@ import com.example.aplikacijazasportsketerene.UserInterface.Search.FilterScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Search.SearchScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Search.ViewMapForSearchedCourts
 import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpScreen
+import com.example.aplikacijazasportsketerene.UserInterface.UserCourts.UserCourtsScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Users.UsersScreen
+import com.example.aplikacijazasportsketerene.UserInterface.UsersProfile.UsersProfileScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 import com.google.gson.Gson
 
@@ -127,7 +129,7 @@ class MainActivity : ComponentActivity() {
             navigateToLikedCourtsPage = {
                 navController.popBackStack(Screen.Courts.name, inclusive = true)
                 navController.navigate(Screen.Courts.name)
-            },
+            }
         )
 
         Box(modifier = Modifier.fillMaxSize()) {
@@ -187,7 +189,7 @@ class MainActivity : ComponentActivity() {
                         court?.let { CourtScreen(court = it, navController = navController) }
                     }
                     composable(Screen.Search.name){
-                        SearchScreen(navController = navController, context = context)
+                        SearchScreen(navController = navController, context = context, navigationBar = navigationBar)
                     }
                     composable(
                         route = "${Screen.SearchedCourts.name}/{court}",
@@ -202,6 +204,24 @@ class MainActivity : ComponentActivity() {
                     }
                     composable(Screen.Users.name){
                         UsersScreen(navController = navController, navigationBar = navigationBar)
+                    }
+                    composable(
+                        route = "${Screen.PostedCourts.name}/{userId}",
+                        arguments = listOf(
+                            navArgument("userId") { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                        UserCourtsScreen(navController = navController, userId = userId)
+                    }
+                    composable(
+                        route = "${Screen.UsersProfile.name}/{userId}",
+                        arguments = listOf(
+                            navArgument("userId") { type = NavType.StringType }
+                        )
+                    ) { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId") ?: ""
+                        UsersProfileScreen(userId = userId,navController = navController)
                     }
                 }
             }
@@ -229,5 +249,7 @@ enum class Screen {
     AddCourt,
     Court,
     SearchedCourts,
-    Filter
+    Filter,
+    PostedCourts,
+    UsersProfile
 }

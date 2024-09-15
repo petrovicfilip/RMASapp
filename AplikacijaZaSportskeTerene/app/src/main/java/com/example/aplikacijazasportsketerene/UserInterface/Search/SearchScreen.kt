@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,6 +37,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -54,15 +56,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.Screen
+import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SearchScreen(
     searchViewModel: SearchViewModel = SearchViewModel.getInstance(),
     navController: NavController,
-    context: Context
+    context: Context,
+    navigationBar: NavigationBar
 ) {
     var expanded by remember { mutableStateOf(false) }
     val searchText = remember { mutableStateOf(TextFieldValue(searchViewModel.searchInput)) }
@@ -70,110 +75,143 @@ fun SearchScreen(
 
     val searchTypeOptions = SearchTipovi.entries.toTypedArray()
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-        Spacer(modifier = Modifier.height(30.dp))
-        // Search Input Field with Icons
-        Row(modifier = Modifier
-            .fillMaxWidth()){
-            TextField(
-                value = searchText.value,
-                onValueChange = {
-                    searchText.value = it
-                    searchViewModel.searchInput = it.text
-                },
-                modifier = Modifier
-                    .padding(end = 5.dp)
-                    .clip(RoundedCornerShape(5.dp)),
-                placeholder = {
-                    Text(getPlaceholder(searchViewModel.searchType))
-                },
-                leadingIcon = {
-                    // Dropdown icon for search type selection
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Izaberi tip pretrage")
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        searchTypeOptions.forEach { type ->
-                            DropdownMenuItem(
-                                text = { Text(type.name) },
-                                onClick = {
-                                    searchViewModel.searchType = type
-                                    searchText.value = TextFieldValue("") // reset input field
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                },
-                trailingIcon = {
-                    IconButton(onClick = {
-                        if(searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Ime)
-                            Toast.makeText(context,"Unesi naziv terena ili izaberi filtere!",Toast.LENGTH_LONG).show()
-                        else if(searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Grad)
-                            Toast.makeText(context,"Unesi naziv grada ili izaberi filtere!",Toast.LENGTH_LONG).show()
-                        else if(searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Ulica)
-                            Toast.makeText(context,"Unesi naziv ulice ili izaberi filtere!",Toast.LENGTH_LONG).show()
-                        else if(searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Radius)
-                            Toast.makeText(context,"Unesi radius ili izaberi filtere!",Toast.LENGTH_LONG).show()
-                        else
-                        coroutineScope.launch(Dispatchers.IO) {
-                            searchViewModel.searchCourts()
-                        }
-                    }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-                }
-            )
-            IconButton(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .background(CardDefaults.cardColors().containerColor, RoundedCornerShape(5.dp)),
-                onClick = {
-                    navController.navigate(Screen.Filter.name)
-            }) {
-                Icon(Icons.Default.Menu, contentDescription = "Filters")
-            }
-        }
-
-        if(searchViewModel.searchResults.isNotEmpty())
-        {
-            Card(
+    Scaffold(
+        bottomBar = { navigationBar.Draw(currentScreen = Screen.Search.name) },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .navigationBarsPadding()
+        ) {
+            Spacer(modifier = Modifier.height(30.dp))
+            // Search Input Field with Icons
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 5.dp),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ){
-                Row(
+            ) {
+                TextField(
+                    value = searchText.value,
+                    onValueChange = {
+                        searchText.value = it
+                        searchViewModel.searchInput = it.text
+                    },
                     modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-
-                    IconButton(onClick = {
-                        val courtJson = Gson().toJson(Court())
-                        navController.navigate("${Screen.SearchedCourts.name}/$courtJson")
-                    }) {
-                        Icon(Icons.Default.LocationOn, contentDescription = "Lokacije terena")
+                        .padding(end = 5.dp)
+                        .clip(RoundedCornerShape(5.dp)),
+                    placeholder = {
+                        Text(getPlaceholder(searchViewModel.searchType))
+                    },
+                    leadingIcon = {
+                        // Dropdown icon for search type selection
+                        IconButton(onClick = { expanded = !expanded }) {
+                            Icon(
+                                Icons.Default.MoreVert,
+                                contentDescription = "Izaberi tip pretrage"
+                            )
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            searchTypeOptions.forEach { type ->
+                                DropdownMenuItem(
+                                    text = { Text(type.name) },
+                                    onClick = {
+                                        searchViewModel.searchType = type
+                                        searchText.value = TextFieldValue("") // reset input field
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            if (searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Ime)
+                                Toast.makeText(
+                                    context,
+                                    "Unesi naziv terena ili izaberi filtere!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            else if (searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Grad)
+                                Toast.makeText(
+                                    context,
+                                    "Unesi naziv grada ili izaberi filtere!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            else if (searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Ulica)
+                                Toast.makeText(
+                                    context,
+                                    "Unesi naziv ulice ili izaberi filtere!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            else if (searchText.value.text == "" && searchViewModel.checkIfNoFiltersAreApplied() && searchViewModel.searchType == SearchTipovi.Radius)
+                                Toast.makeText(
+                                    context,
+                                    "Unesi radius ili izaberi filtere!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            else
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    searchViewModel.searchCourts()
+                                }
+                        }) {
+                            Icon(Icons.Default.Search, contentDescription = "Search")
+                        }
                     }
-
-                    Text(
-                        modifier = Modifier.align(Alignment.CenterVertically),
-                        text = "Prikazi pronadjene terene na mapi"
-                    )
+                )
+                IconButton(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .background(
+                            CardDefaults.cardColors().containerColor,
+                            RoundedCornerShape(5.dp)
+                        ),
+                    onClick = {
+                        navController.navigate(Screen.Filter.name)
+                    }) {
+                    Icon(Icons.Default.Menu, contentDescription = "Filters")
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            if (searchViewModel.searchResults.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 5.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
 
-        // Display Search Results
-        LazyColumn {
-            items(searchViewModel.searchResults) { court ->
-                CourtItem(court = court, navController = navController){
-                    val courtJson = Gson().toJson(court)
-                    navController.navigate("${Screen.Court.name}/$courtJson")
+                        IconButton(onClick = {
+                            val courtJson = Gson().toJson(Court())
+                            navController.navigate("${Screen.SearchedCourts.name}/$courtJson")
+                        }) {
+                            Icon(Icons.Default.LocationOn, contentDescription = "Lokacije terena")
+                        }
+
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterVertically),
+                            text = "Prikazi pronadjene terene na mapi"
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Display Search Results
+            LazyColumn {
+                items(searchViewModel.searchResults) { court ->
+                    CourtItem(court = court, navController = navController) {
+                        val courtJson = Gson().toJson(court)
+                        navController.navigate("${Screen.Court.name}/$courtJson")
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(50.dp))
                 }
             }
         }
@@ -189,11 +227,11 @@ fun CourtItem(court: Court, navController: NavController, onClick: () -> Unit,) 
             .padding(vertical = 8.dp, horizontal = 16.dp)
             .clickable(
                 onClick = onClick,
-                indication = rememberRipple(
+                /*indication = rememberRipple(
                     bounded = true,
-                    color = Color.Gray
+                    color = Color.LightGray
                 ), // Ripple effect when clicked
-                interactionSource = MutableInteractionSource() // Handles interaction like press/click
+                interactionSource = MutableInteractionSource()*/ // Handles interaction like press/click
             ),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(4.dp)
