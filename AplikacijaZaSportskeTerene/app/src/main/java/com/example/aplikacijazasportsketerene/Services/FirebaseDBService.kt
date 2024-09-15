@@ -2,8 +2,6 @@ package com.example.aplikacijazasportsketerene.Services
 
 import android.net.Uri
 import android.util.Log
-import androidx.compose.ui.geometry.CornerRadius
-import com.example.aplikacijazasportsketerene.DataClasses.BoundingBox
 import com.example.aplikacijazasportsketerene.DataClasses.Comment
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.DataClasses.Review
@@ -27,10 +25,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.sql.Time
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -111,10 +107,15 @@ class FirebaseDBService private constructor() {
 //    }
 
 
-    suspend fun getUserWithUsername(username: String): Boolean = coroutineScope {
+     suspend fun getUserWithUsername(username: String): Boolean = coroutineScope {
         val job = async(Dispatchers.IO) { findUserWithUsername(username) }
         return@coroutineScope job.await().isNotEmpty()
     }
+
+     /*suspend fun getUserForComment(commentId: String): User {
+        val job = async(Dispatchers.IO) { findUserWithUsername(username) }
+        return@coroutineScope job.await().isNotEmpty()
+    }*/
 
     suspend fun getUser(uid: String): User? {
         try{
@@ -217,6 +218,22 @@ class FirebaseDBService private constructor() {
 //                onComplete(emptyList())
 //            }
     }
+
+    suspend fun getUsersSortedByPoints(): List<User> {
+        try{
+            val returnedDocs = users
+                .orderBy("points",Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            return returnedDocs.mapNotNull { it.toObject<User>() }
+
+        }
+        catch(e: Exception){
+            return emptyList<User>()
+        }
+    }
+
 
     /**
      * COURTS DB CALLS
@@ -527,22 +544,26 @@ class FirebaseDBService private constructor() {
         }
     }
 
-    suspend fun addReply(userId: String,commentId: String,reply: Comment): Boolean{
+    suspend fun addReply(userId: String,commentId: String,reply: Comment): String{
         try{
-            comments.
-                document(commentId)
+            val newReply = comments
+                .document(commentId)
                 .collection("replies")
                 .add(reply)
+                .await()
+
+            newReply
+                .update("id",newReply.id)
                 .await()
 
             comments
                 .document(commentId)
                 .update("numOfReplies",FieldValue.increment(1))
-            return true
+            return newReply.id
         }
         catch (e: Exception){
             println("Greska pri dodavanju odgovora!?!?: ${e.message}")
-            return false
+            return ""
         }
     }
 

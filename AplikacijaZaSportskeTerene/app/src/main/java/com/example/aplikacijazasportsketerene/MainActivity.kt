@@ -41,6 +41,7 @@ import com.example.aplikacijazasportsketerene.UserInterface.Search.FilterScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Search.SearchScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Search.ViewMapForSearchedCourts
 import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpScreen
+import com.example.aplikacijazasportsketerene.UserInterface.Users.UsersScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 import com.google.gson.Gson
 
@@ -111,9 +112,9 @@ class MainActivity : ComponentActivity() {
                 navController.popBackStack(Screen.Search.name, inclusive = true)
                 navController.navigate(Screen.Search.name)
             },
-            navigateToPlayersPage = {
-                navController.popBackStack(Screen.Players.name, inclusive = true)
-                navController.navigate(Screen.Players.name)
+            navigateToUsersPage = {
+                navController.popBackStack(Screen.Users.name, inclusive = true)
+                navController.navigate(Screen.Users.name)
             },
             navigateToProfilePage = {
                 navController.popBackStack(Screen.Profile.name, inclusive = true)
@@ -162,13 +163,6 @@ class MainActivity : ComponentActivity() {
                             navigationBar = navigationBar
                         )
                     }
-                    composable(Screen.Players.name) {
-                        PlayersPage(
-                            navController = navController,
-                            context = applicationContext,
-                            navigationBar = navigationBar
-                        )
-                    }
                     composable(Screen.Loading.name) {
                         LoadingScreen(
                         )
@@ -206,16 +200,11 @@ class MainActivity : ComponentActivity() {
                     composable(Screen.Filter.name){
                         FilterScreen(navController = navController)
                     }
+                    composable(Screen.Users.name){
+                        UsersScreen(navController = navController, navigationBar = navigationBar)
+                    }
                 }
             }
-        }
-    }
-
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    private
-    @Composable
-    fun PlayersPage(navController: NavController, context: Context?, navigationBar: NavigationBar) {
-        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Players.name) }) {
         }
     }
 
@@ -235,7 +224,7 @@ enum class Screen {
     Search,
     Courts,
     Profile,
-    Players,
+    Users,
     Loading,
     AddCourt,
     Court,

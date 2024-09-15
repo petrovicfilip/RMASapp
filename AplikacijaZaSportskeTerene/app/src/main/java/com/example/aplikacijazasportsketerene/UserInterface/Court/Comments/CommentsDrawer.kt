@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,11 +36,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.DataClasses.Comment
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.UserInterface.Court.CourtViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.launch
 
 @Composable
 fun CommentsSection(
@@ -87,7 +90,8 @@ fun CommentsSection(
                     if (commentText.isNotEmpty()) {
                         courtViewModel.postingComment.value = true
                         courtViewModel.newComment.value.value = commentText
-                        courtViewModel.addComment(Comment().copy(value = commentText, userId = Firebase.auth.currentUser!!.uid, courtId = courtViewModel.court.value!!.id!!)) // updatuje newComment
+                        courtViewModel.addComment(Comment().copy(value = commentText, userId = Firebase.auth.currentUser!!.uid,
+                            courtId = courtViewModel.court.value!!.id!!, posterUsername = courtViewModel.user.value!!.username)) // updatuje newComment
                         commentText = ""
                     }
                 },
@@ -121,14 +125,15 @@ fun CommentsSection(
                     .padding(16.dp)
             ) {
                 courtViewModel.commentsAndReplies.keys.forEach { comment ->
+
+                    if(courtViewModel.showReplies[comment] == null)
+                        courtViewModel.showReplies[comment] = false
+                    if(courtViewModel.fetchingReplies[comment] == null)
+                        courtViewModel.fetchingReplies[comment] = false
+
                     SingleComment(
                         comment = comment,
                         replies = courtViewModel.commentsAndReplies[comment] ?: emptyList(),
-                        onReplyClick = { replyText ->
-                            courtViewModel.commentsAndReplies[comment] = courtViewModel.commentsAndReplies[comment]?.plus(Comment(value = replyText))
-                            // da azurirm odgovore u bazi i treba da updatujem numOfReplies na taj
-                            courtViewModel.addReply(comment,replyText)
-                        },
                         courtViewModel
                     )
                 }
@@ -153,12 +158,15 @@ fun CommentsSection(
 fun SingleComment(
     comment: Comment, // Tekst komentara
     replies: List<Comment>, // Lista odgovora na komentar
-    onReplyClick: (String) -> Unit, // Funkcija za dodavanje odgovora
     courtViewModel: CourtViewModel
 ) {
     var showReplies by remember { mutableStateOf(false) }
     var replyText by remember { mutableStateOf("") }
     var isReplying by remember { mutableStateOf(false) }
+
+/*    courtViewModel.showReplies[comment] = false
+    courtViewModel.fetchingReplies[comment] = false*/
+    //val currentReplies by remember { mutableStateOf(courtViewModel.commentsAndReplies[comment] ?: emptyList()) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -171,10 +179,23 @@ fun SingleComment(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // Prikaz korisničkog imena (fiksno za sada)
-            Text(
-                text = courtViewModel.user.value!!.username, // Ovo je placeholder za ime korisnika
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text(
+                    text = comment.posterUsername, // Ovo je placeholder za ime korisnika
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if(comment.userId == Firebase.auth.currentUser!!.uid) {
+                    IconButton(onClick = { courtViewModel.deleteComment(comment.id) }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "delete comment"
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -218,7 +239,10 @@ fun SingleComment(
                 Button(
                     onClick = {
                         if (replyText.isNotEmpty()) {
-                            onReplyClick(replyText) // Dodaj odgovor
+                            // da azurirm odgovore u bazi i treba da updatujem numOfReplies na taj
+                            isReplying = true
+                            courtViewModel.fetchingReplies[comment] = true
+                            courtViewModel.addReply(comment, replyText) // Dodaj odgovor
                             replyText = "" // Resetuj polje za unos odgovora
                             isReplying = false
                         }
@@ -233,33 +257,32 @@ fun SingleComment(
 
             // Prikaz odgovora ako postoje
             TextButton(onClick = {
-                showReplies = !showReplies
-                if(showReplies) {
+                if(courtViewModel.showReplies[comment] == null)// ne bi trebalo da moze da se desi!!!
+                    courtViewModel.showReplies[comment] = true // ne bi trebalo da moze da se desi!!!
+                else courtViewModel.showReplies[comment] = !courtViewModel.showReplies[comment]!!
+                if(courtViewModel.showReplies[comment] == true) {
                     courtViewModel.fetchingReplies[comment] = true
                     courtViewModel.getRepliesForComment(comment)
                 }
             }) {
                 if(comment.numOfReplies > 0){
                     Text(
-                        if (showReplies) "Sakrij odgovore" else "Prikaži odgovore",
+                        if (courtViewModel.showReplies[comment] != null && courtViewModel.showReplies[comment] == true) "Sakrij odgovore" else "Prikaži odgovore",
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
-
-            if (showReplies && !courtViewModel.fetchingReplies[comment]!!) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    replies.forEach { reply ->
-                        Reply(reply, courtViewModel)
-                    }
-                }
-            }
-            else if(courtViewModel.fetchingReplies[comment] == null){
-            }
-            else if(courtViewModel.fetchingReplies[comment]!!)
+            if(courtViewModel.fetchingReplies[comment] != null && courtViewModel.fetchingReplies[comment] == true)
             {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     CircularProgressIndicator(modifier = Modifier.height(60.dp))
+                }
+            }
+            else if (courtViewModel.fetchingReplies[comment] != null && courtViewModel.showReplies[comment] == true && courtViewModel.fetchingReplies[comment] == false) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    replies.forEach { reply ->
+                        Reply(reply, courtViewModel, comment.id)
+                    }
                 }
             }
         }
@@ -267,7 +290,7 @@ fun SingleComment(
 }
 
 @Composable
-fun Reply(reply: Comment,courtViewModel: CourtViewModel) {
+fun Reply(reply: Comment,courtViewModel: CourtViewModel,commentId: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -281,10 +304,27 @@ fun Reply(reply: Comment,courtViewModel: CourtViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)) {
             // Prikaz korisničkog imena odgovora (placeholder za sada)
-            Text(
-                text = courtViewModel.user.value!!.username,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Text(
+                    text = reply.posterUsername,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if(reply.userId == Firebase.auth.currentUser!!.uid) {
+                    IconButton(onClick = {
+                        val comment = courtViewModel.fetchingReplies.keys.find { it.id == commentId }
+                        if(comment != null)
+                            courtViewModel.fetchingReplies[comment] = true
+                        courtViewModel.deleteReply(commentId,reply.id) }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "delete reply"
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 

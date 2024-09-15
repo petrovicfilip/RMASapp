@@ -52,10 +52,15 @@ class CourtViewModel(
     val postingReview = mutableStateOf(false)
     val fetchingComments = mutableStateOf(false)
     val fetchingReplies = mutableStateMapOf<Comment,Boolean>()
+    val showReplies = mutableStateMapOf<Comment,Boolean>()
     val postingComment = mutableStateOf(false)
 
-    var newComment = mutableStateOf<Comment>(Comment())
+    var newComment = mutableStateOf(Comment())
+    var newReply = mutableStateOf(Comment())
     val commentsAndReplies = mutableStateMapOf<Comment,List<Comment>?>()
+
+    //!!!!!!!!
+    //val showReplies = mutableStateOf(false)
 
     private val mutexComments = Mutex()
     private val mutexLikes = Mutex()
@@ -97,36 +102,102 @@ class CourtViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val replies = FirebaseDBService.getClassInstance().getRepliesForComment(comment.id)
             withContext(Dispatchers.Main){
-                fetchingReplies[comment] = false
                 commentsAndReplies[comment] = replies
+                fetchingReplies[comment] = false
             }
         }
     }
 
-    fun addComment(comment: Comment,courtId: String = court.value!!.id.toString()){
+    fun addComment(comment: Comment,courtId: String = court.value!!.id.toString(),userId: String = Firebase.auth.currentUser!!.uid){
         viewModelScope.launch(Dispatchers.IO) {
             val commentId = FirebaseDBService.getClassInstance().addComment(Firebase.auth.currentUser!!.uid,courtId,comment)
 
-            withContext(Dispatchers.Main){
-                newComment.value.id = commentId
+            withContext(Dispatchers.Main) {
+                /*newComment.value.id = commentId
                 newComment.value.value = comment.value
+                newComment.value.posterUsername = user.value!!.username
+                newComment.value.courtId = courtId
+                newComment.value.userId = userId*/
+
+                val newComment = Comment(
+                    id = commentId,
+                    value = comment.value,
+                    posterUsername = user.value!!.username,
+                    courtId = courtId,
+                    userId = userId
+                )
 
                 postingComment.value = false
-                commentsAndReplies[newComment.value] = emptyList()
+                commentsAndReplies[newComment] = emptyList()
             }
         }
 
     }
 
-    fun addReply(comment: Comment,replyText: String){
+    fun deleteComment(commentId: String){
         viewModelScope.launch(Dispatchers.IO) {
-            FirebaseDBService.getClassInstance().addReply(Firebase.auth.currentUser!!.uid,comment.id,
-                Comment(value = replyText))
+            FirebaseDBService.getClassInstance().deleteComment(commentId)
+
+            withContext(Dispatchers.Main){
+                val toRemove = commentsAndReplies.keys.find { it.id == commentId }
+                commentsAndReplies.remove(toRemove)
+            }
+        }
+    }
+
+    fun deleteReply(commentId: String, replyId: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            FirebaseDBService.getClassInstance().deleteReply(commentId,replyId)
+
+            withContext(Dispatchers.Main){
+                val comment = commentsAndReplies.keys.find { it.id == commentId }
+                if(comment != null){
+                    commentsAndReplies[comment] = commentsAndReplies[comment]?.filter {
+                        it.id != replyId
+                    }
+                    fetchingReplies[comment] = false
+                }
+            }
+        }
+
+    }
+    fun addReply(comment: Comment,replyText: String,posterId: String = Firebase.auth.currentUser!!.uid){
+        viewModelScope.launch(Dispatchers.IO) {
+            val replyId = FirebaseDBService.getClassInstance().addReply(Firebase.auth.currentUser!!.uid,comment.id,
+                Comment(value = replyText, posterUsername = user.value!!.username, courtId = comment.courtId, userId = posterId))
             withContext(Dispatchers.Main){
                 //fetchingReplies.value = false
                 //commentsAndReplies[comment] = replies
-                val stateComment = commentsAndReplies.keys.find { it == comment }
+                val stateComment = commentsAndReplies.keys.find { it.id == comment.id }
                 stateComment?.numOfReplies = stateComment?.numOfReplies!! + 1
+
+                val newReply =  Comment(
+                    id = replyId,
+                    value = replyText,
+                    posterUsername = user.value!!.username,
+                    userId = posterId,
+                    courtId = comment.courtId
+                )
+                val commentKeyInMap = commentsAndReplies.keys.find { it.id == comment.id }
+                val newValues = commentsAndReplies[commentKeyInMap]
+                if(commentKeyInMap != null){
+                    // hard times call for extreme measures...
+                    // UPDATE: radi bolje ovako, samo Bog zna zasto, a i ne interesuje me, ne mogu vise.
+                    // ko je pravio mape u kotlin da je pored mene sad da mu zalepim 2-3 vaspitne...
+                    // ce okrivimo njega, jer ja nisam naso sta sam pogresio.
+
+                    val filtered = commentsAndReplies.filter { it.key.id != commentKeyInMap.id }
+                    commentsAndReplies.clear()
+                    commentsAndReplies.putAll(filtered)
+                   // commentsAndReplies[commentKeyInMap] = newValues
+                    commentsAndReplies[commentKeyInMap] = commentsAndReplies[commentKeyInMap]?.plus(newReply)
+
+                    getRepliesForComment(comment)
+                    //fetchingReplies[commentKeyInMap] = false
+                    // OVO RAZMOTRITI BLAGOVREMENO
+                    showReplies[commentKeyInMap] = true // ovo ne bi trebalo da se dopise ali probavam,
+                }
+
             }
         }
 
@@ -198,6 +269,12 @@ class CourtViewModel(
             }
         }
 
+    }
+
+    suspend fun getUserForComment(userId: String): User? {
+        return viewModelScope.async(Dispatchers.IO) {
+            FirebaseDBService.getClassInstance().getUser(userId)
+        }.await()
     }
 
     fun likeOrDislikeCourt(userId: String,court: Court,likeOrDislike: Boolean){

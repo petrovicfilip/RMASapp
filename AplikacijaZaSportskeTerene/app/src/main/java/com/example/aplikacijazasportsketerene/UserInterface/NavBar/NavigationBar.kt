@@ -18,7 +18,6 @@ import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -37,7 +36,7 @@ class NavigationBar(
     private val navigateToHomePage: () -> Unit,
     private val navigateToSearchingPage: () -> Unit,
     private val navigateToLikedCourtsPage: () -> Unit,
-    private val navigateToPlayersPage: () -> Unit,
+    private val navigateToUsersPage: () -> Unit,
     private val navigateToProfilePage: () -> Unit,
 ) {
     @Composable
@@ -78,8 +77,8 @@ class NavigationBar(
                     modifier = Modifier.weight(2f)
                 )
                 TransparentIconButton(
-                    onClick = navigateToPlayersPage,
-                    icon = if(currentScreen == Screen.Players.name)
+                    onClick = navigateToUsersPage,
+                    icon = if(currentScreen == Screen.Users.name)
                         ImageVector.vectorResource(id = R.drawable.baseline_people_24)
                     else ImageVector.vectorResource(id = R.drawable.baseline_people_outline_24),
                     modifier = Modifier.weight(2f)
