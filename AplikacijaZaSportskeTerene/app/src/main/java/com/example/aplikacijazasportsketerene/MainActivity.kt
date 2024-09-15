@@ -42,7 +42,7 @@ import com.example.aplikacijazasportsketerene.UserInterface.Search.SearchScreen
 import com.example.aplikacijazasportsketerene.UserInterface.Search.ViewMapForSearchedCourts
 import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpScreen
 import com.example.aplikacijazasportsketerene.UserInterface.UserCourts.UserCourtsScreen
-import com.example.aplikacijazasportsketerene.UserInterface.Users.UsersScreen
+import com.example.aplikacijazasportsketerene.UserInterface.UsersLeaderboard.UsersScreen
 import com.example.aplikacijazasportsketerene.UserInterface.UsersProfile.UsersProfileScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 import com.google.gson.Gson
@@ -151,13 +151,6 @@ class MainActivity : ComponentActivity() {
                             navigationBar = navigationBar
                         )
                     }
-                    composable(Screen.Courts.name) {
-                        CourtsPage(
-                            navController = navController,
-                            context = applicationContext,
-                            navigationBar = navigationBar
-                        )
-                    }
                     composable(Screen.Profile.name) {
                         ProfilePage(
                             navController = navController,
@@ -225,14 +218,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-    }
-
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    private
-    @Composable
-    fun CourtsPage(navController: NavController, context: Context?, navigationBar: NavigationBar) {
-        Scaffold(bottomBar = { navigationBar.Draw(currentScreen = Screen.Courts.name) }) {
         }
     }
 }

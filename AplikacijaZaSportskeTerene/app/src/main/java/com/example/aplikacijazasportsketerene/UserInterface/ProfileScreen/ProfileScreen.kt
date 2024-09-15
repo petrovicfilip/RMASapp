@@ -392,7 +392,9 @@ fun ProfilePage(
                 Button(
                     modifier = Modifier.padding(5.dp),
                     onClick = {
-                    AccountService.getClassInstance().signOut()
+                        navController.popBackStack(Screen.Home.name, inclusive = true)
+                        navController.navigate(Screen.LogIn.name)
+                        AccountService.getClassInstance().signOut()
                 }) {
                     Text(text = "Odjavi se")
                 }

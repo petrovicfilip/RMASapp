@@ -11,10 +11,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.AccountService
 import com.example.aplikacijazasportsketerene.Services.DatastoreService
 import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
+import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreenViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuthEmailException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,6 +37,8 @@ class SignUpViewModel private constructor(
             }
         }
     }
+
+    val passwordPattern = "^(?=.*[A-Z])(?=.*[!@#\$%^&*(),.?\":{}|<>]).{10,}$".toRegex()
 
     val firstName = MutableStateFlow("")
     val lastName = MutableStateFlow("")
@@ -87,23 +93,32 @@ class SignUpViewModel private constructor(
         confirmPasswordVisible.value = !confirmPasswordVisible.value
     }
 
-    fun makeAccount(openAndPopUp: () -> Unit, openUpLoading: () -> Unit){
+    // SA RAZLOGOM NIJE LEPO NAPISANO!!!
+    suspend fun makeAccount(openAndPopUp: () -> Unit, openUpLoading: () -> Unit): Boolean?{
 
         openUpLoading()
-        GlobalScope.launch(Dispatchers.IO){
-            accountService.signUp(
-                email.value,
-                password.value,
-                username.value,
-                firstName.value,
-                lastName.value,
-                phoneNumber.value
-            )
+
+        val toReturn = withContext(Dispatchers.IO){
+            try{
+                LoadingScreenViewModel.getInstance().makingAccount.value = true
+                accountService.signUp(
+                    email.value,
+                    password.value,
+                    username.value,
+                    firstName.value,
+                    lastName.value,
+                    phoneNumber.value
+                )
+            }
+            catch(exception: FirebaseAuthUserCollisionException){
+                return@withContext null
+            }
+            LoadingScreenViewModel.getInstance().makingAccount.value = false
             if (profilePicture != null) {
-                GlobalScope.launch(Dispatchers.IO) {
+                LoadingScreenViewModel.getInstance().uploadingProfilePicture.value = true
                     DatastoreService.getClassInstance()
                         .uploadProfilePicture(Firebase.auth.currentUser!!.uid, profilePicture!!)
-                }
+                LoadingScreenViewModel.getInstance().uploadingProfilePicture.value = false
                 // TODO else { ... }
             }
             accountService.signOut()
@@ -111,21 +126,27 @@ class SignUpViewModel private constructor(
             withContext(Dispatchers.Main){
                 openAndPopUp()
             }
+            return@withContext true
         }
-
+        return toReturn
     }
-    fun onSignUpClick(openAndPopUp: () -> Unit, openUpLoading: () -> Unit) {
+    fun onSignUpClick(openAndPopUp: () -> Unit, openUpLoading: () -> Unit, popUp: () -> Unit) {
 
         viewModelScope.launch {
             if (email.value == "" || password.value == "" || confirmPassword.value == "" ||
                 username.value == "" || username.value == "" || lastName.value == "" || phoneNumber.value == ""
             )
                 Toast.makeText(appContext, "Popunite sva polja!", Toast.LENGTH_SHORT).show()
-            else if (password.value.length < 8) {
+            else if (!passwordPattern.matches(password.value)) {
                 Toast.makeText(
                     appContext,
-                    "Šifra mora biti duza od 8 karaktera!",
-                    Toast.LENGTH_LONG
+                    "Šifra mora biti barem 10 karaktera!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                Toast.makeText(
+                    appContext,
+                    " Takodje, mora sadrzati barem 1 veliko slovo i neki specijalni znak (npr. !,?,* itd)!",
+                    Toast.LENGTH_SHORT
                 ).show()
             } else if (password.value != confirmPassword.value) {
                 Toast.makeText(appContext, "Šifre se ne podudaraju!", Toast.LENGTH_SHORT).show()
@@ -135,9 +156,23 @@ class SignUpViewModel private constructor(
                     "Postoji korisnik sa istim username-om!",
                     Toast.LENGTH_SHORT
                 ).show()
+            else if (FirebaseDBService.getClassInstance().getUserWithUsername(username.value))
+                Toast.makeText(
+                    appContext,
+                    "Postoji korisnik sa istim username-om!",
+                    Toast.LENGTH_SHORT
+                ).show()
             else {
                withContext(Dispatchers.Main){
-                   makeAccount(openAndPopUp,openUpLoading)
+                  val returned =  makeAccount(openAndPopUp,openUpLoading)
+                   if(returned == null) {
+                       popUp()
+                       Toast.makeText(
+                           appContext,
+                           "Postoji korisnik sa istim mail-om!",
+                           Toast.LENGTH_SHORT
+                       ).show()
+                   }
                }
             }
         }

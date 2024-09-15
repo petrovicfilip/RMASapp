@@ -9,6 +9,7 @@ import com.example.aplikacijazasportsketerene.DataClasses.User
 import com.example.aplikacijazasportsketerene.DataClasses.calculateBoundingBox
 import com.example.aplikacijazasportsketerene.DataClasses.haversine
 import com.example.aplikacijazasportsketerene.Location.CurrentUserLocation
+import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreenViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -230,7 +231,7 @@ class FirebaseDBService private constructor() {
 
         }
         catch(e: Exception){
-            return emptyList<User>()
+            return emptyList()
         }
     }
 
@@ -240,10 +241,13 @@ class FirebaseDBService private constructor() {
      **/
 
     suspend fun addCourt(court: Court, listOfUris: List<Uri>, onUploadFinished: () -> Unit) {
+        LoadingScreenViewModel.getInstance().uploadingCourtBasicInfo.value = true
+
         val addCourt = courts.add(court)
         val ref = addCourt.await()
 
-        scope.launch {
+
+        scope.launch(Dispatchers.IO) {
             courts.document(ref.id).update("id", ref.id).await()
             users
                 .document(auth.currentUser!!.uid)
@@ -251,8 +255,10 @@ class FirebaseDBService private constructor() {
                 .await()
         }
 
-        val jobs = listOfUris.mapIndexed { index, uri ->
+        LoadingScreenViewModel.getInstance().uploadingCourtBasicInfo.value = false
 
+        LoadingScreenViewModel.getInstance().uploadingCourtPictures.value = true
+        val jobs = listOfUris.mapIndexed { index, uri ->
             scope.async {
                 DatastoreService.getClassInstance()
                     .uploadCourtImage(uri, court.userId!!, ref.id, (index + 1).toString())
@@ -260,6 +266,8 @@ class FirebaseDBService private constructor() {
         }
 
         jobs.awaitAll()
+
+        LoadingScreenViewModel.getInstance().uploadingCourtPictures.value = false
 
         withContext(Dispatchers.Main) {
             onUploadFinished()
@@ -725,5 +733,4 @@ class FirebaseDBService private constructor() {
 
         return results.mapNotNull { it.toObject<Court>() }
     }
-
 }

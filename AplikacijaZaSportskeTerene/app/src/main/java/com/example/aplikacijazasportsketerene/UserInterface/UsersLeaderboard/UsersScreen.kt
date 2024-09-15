@@ -1,5 +1,6 @@
-package com.example.aplikacijazasportsketerene.UserInterface.Users
+package com.example.aplikacijazasportsketerene.UserInterface.UsersLeaderboard
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,8 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +54,7 @@ fun UsersScreen(
             TopAppBar(
                 title = { Text(text = "Leaderboard") },
                 actions = {
-                    IconButton(onClick = { /* Handle sort button click */ }) {
+                    IconButton(onClick = { }) {
                         Icon(painterResource(R.drawable.baseline_sort_24), contentDescription = "Sort")
                         DropdownMenuExample(usersScreenViewModel::sortUsers)
                     }
@@ -74,7 +73,7 @@ fun UsersScreen(
             ) {
 
                 items(usersScreenViewModel.users.size) { index ->
-                    usersScreenViewModel.users[index]?.let { UserCard(user = it) }
+                    usersScreenViewModel.users[index]?.let { UserCard(user = it, navController) }
                 }
             }
         }
@@ -84,11 +83,14 @@ fun UsersScreen(
 }
 
 @Composable
-fun UserCard(user: User) {
+fun UserCard(user: User, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable {
+                       navController.navigate("${Screen.UsersProfile.name}/${user.id}")
+            },
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Row(
@@ -105,7 +107,7 @@ fun UserCard(user: User) {
             // User Info
             Column {
                 Text(text = "${user.firstName ?: ""} ${user.lastName ?: ""}", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Username: ${user.username}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "@${user.username}", style = MaterialTheme.typography.bodyMedium)
                 Text(text = "Poeni: ${user.points}", style = MaterialTheme.typography.bodyMedium)
             }
         }

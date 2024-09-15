@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.AccountService
+import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreenViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
@@ -47,10 +48,12 @@ class LogInViewModel private constructor(
     }
 
     fun onSignInClick(openAndPopUp : () -> Unit, loading : () -> Unit, popBack : () -> Unit) {
+        LoadingScreenViewModel.getInstance().loggingIn.value = true
         loading()
         viewModelScope.launch {
             if(accountService.signIn(email.value, password.value)) {
                 if (Firebase.auth.currentUser!!.isEmailVerified) {
+                    LoadingScreenViewModel.getInstance().loggingIn.value = false
                     Toast.makeText(appContext, "Ulogovani ste!", Toast.LENGTH_SHORT).show()
 
                     withContext(Dispatchers.Main){

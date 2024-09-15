@@ -1,4 +1,4 @@
-package com.example.aplikacijazasportsketerene.UserInterface.Users
+package com.example.aplikacijazasportsketerene.UserInterface.UsersLeaderboard
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.DataClasses.User
 import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
 import com.example.aplikacijazasportsketerene.SingletonViewModel
-import com.google.firebase.Firebase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

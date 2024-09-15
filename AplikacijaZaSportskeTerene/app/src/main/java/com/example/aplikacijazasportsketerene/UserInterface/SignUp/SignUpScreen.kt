@@ -18,16 +18,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -77,13 +83,14 @@ fun SignUpScreen(
         }
     )
 
-    Scaffold(){ _ ->
+    Scaffold() { _ ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
-                .imePadding(),
+                .imePadding()
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -108,101 +115,140 @@ fun SignUpScreen(
                 color = Color.Gray
             )
             Spacer(modifier = Modifier.height(12.dp))
-            if (profilePictureUri != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(profilePictureUri),
-                    contentDescription = null,
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+                //.padding(8.dp),
+                , colors = CardColors(
+                    containerColor = CardDefaults.cardColors().containerColor,
+                    contentColor = Color.Black,
+                    disabledContentColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = Color.Gray
+                ),
+                elevation = CardDefaults.cardElevation(8.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(
                     modifier = Modifier
-                        .size(128.dp)
-                        .clip(CircleShape)
-                        .border(
-                            border = BorderStroke(2.dp, Color.Cyan),
-                            shape = CircleShape
-                        ),
-                        contentScale = ContentScale.Crop,
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (profilePictureUri != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(profilePictureUri),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(128.dp)
+                                .clip(CircleShape)
+                                .border(
+                                    border = BorderStroke(2.dp, Color.Cyan),
+                                    shape = CircleShape
+                                )
+                                .padding(8.dp),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Button(onClick = {
+                        singlePhotoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }) {
+                        Text("Odaberite profilnu sliku")
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = {
+                        signUpViewModel.updateFirstName(it)
+                    },
+                    label = { Text("Ime") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_person_24),
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = {
+                        signUpViewModel.updateLastName(it)
+                    },
+                    label = { Text("Prezime") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_person_24),
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = {
+                        signUpViewModel.updateUsername(it)
+                    },
+                    label = { Text("Korisničko ime") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_person_outline_24),
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        signUpViewModel.updateEmail(it)
+                    },
+                    label = { Text("E-mail") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_email_24),
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = phoneNumber,
+                    onValueChange = {
+                        signUpViewModel.updatePhoneNumber(it)
+                    },
+                    label = { Text("Broj telefona") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_phone_24),
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {
-                singlePhotoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            }) {
-                Text("Odaberite profilnu sliku")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = {
-                    signUpViewModel.updateFirstName(it)
-                },
-                label = { Text("Ime") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_person_24),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = {
-                    signUpViewModel.updateLastName(it)
-                },
-                label = { Text("Prezime") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_person_24),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            OutlinedTextField(
-                value = username,
-                onValueChange = {
-                    signUpViewModel.updateUsername(it)
-                },
-                label = { Text("Korisničko ime") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_person_outline_24),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    signUpViewModel.updateEmail(it)
-                },
-                label = { Text("E-mail") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_email_24),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(17.dp))
-            OutlinedTextField(
-                value = phoneNumber,
-                onValueChange = {
-                    signUpViewModel.updatePhoneNumber(it)
-                },
-                label = { Text("Broj telefona") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_phone_24),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
             Spacer(modifier = Modifier.height(22.dp))
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
@@ -210,82 +256,110 @@ fun SignUpScreen(
                 color = Color.Gray
             )
             Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    signUpViewModel.updatePassword(it)
-                },
-                label = { Text("Šifra") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_password_24),
-                        contentDescription = null
-                    )
-                },
-                trailingIcon = {
-                    val image = if (passwordVisible)
-                        painterResource(id = R.drawable.baseline_visibility_24)
-                    else
-                        painterResource(id = R.drawable.baseline_visibility_off_24)
-
-                    IconButton(onClick = {
-                        signUpViewModel.togglePasswordVisibility()
-                    }) {
-                        Icon(painter = image, contentDescription = null)
-                    }
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = {
-                    signUpViewModel.updateConfirmPassword(it)
-                },
-                label = { Text("Potvrdi šifru") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_password_24),
-                        contentDescription = null
-                    )
-                },
-                trailingIcon = {
-                    val image = if (confirmPasswordVisible)
-                        painterResource(id = R.drawable.baseline_visibility_24)
-                    else
-                        painterResource(id = R.drawable.baseline_visibility_off_24)
-
-                    IconButton(onClick = {
-                        signUpViewModel.toggleConfirmPasswordVisibility()
-                    }) {
-                        Icon(painter = image, contentDescription = null)
-                    }
-                },
-                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { signUpViewModel.onSignUpClick ({
-                    navController.popBackStack(Screen.SignIn.name, inclusive = true)
-                    Toast.makeText(
-                        context,
-                        "Verifikujte nalog, klikom na link poslat na vas mail!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                },{
-                    navController.navigate(Screen.Loading.name)
-                } )},
+            Card(
                 modifier = Modifier
-                    .height(40.dp)
                     .fillMaxWidth()
-            ) {
-                Text("Napravite nalog")
+                    .align(Alignment.CenterHorizontally)
+                    .padding(8.dp),
+                colors = CardColors(
+                    containerColor = CardDefaults.cardColors().containerColor,
+                    contentColor = Color.Black,
+                    disabledContentColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = Color.Gray
+                ),
+                elevation = CardDefaults.cardElevation(8.dp),
+                shape = RoundedCornerShape(8.dp)
+            ){
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        signUpViewModel.updatePassword(it)
+                    },
+                    label = { Text("Šifra") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_password_24),
+                            contentDescription = null
+                        )
+                    },
+                    trailingIcon = {
+                        val image = if (passwordVisible)
+                            painterResource(id = R.drawable.baseline_visibility_24)
+                        else
+                            painterResource(id = R.drawable.baseline_visibility_off_24)
+
+                        IconButton(onClick = {
+                            signUpViewModel.togglePasswordVisibility()
+                        }) {
+                            Icon(painter = image, contentDescription = null)
+                        }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = {
+                        signUpViewModel.updateConfirmPassword(it)
+                    },
+                    label = { Text("Potvrdi šifru") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_password_24),
+                            contentDescription = null
+                        )
+                    },
+                    trailingIcon = {
+                        val image = if (confirmPasswordVisible)
+                            painterResource(id = R.drawable.baseline_visibility_24)
+                        else
+                            painterResource(id = R.drawable.baseline_visibility_off_24)
+
+                        IconButton(onClick = {
+                            signUpViewModel.toggleConfirmPasswordVisibility()
+                        }) {
+                            Icon(painter = image, contentDescription = null)
+                        }
+                    },
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    Button(
+                        onClick = {
+                            signUpViewModel.onSignUpClick({
+                                navController.popBackStack(Screen.SignIn.name, inclusive = true)
+                                Toast.makeText(
+                                    context,
+                                    "Verifikujte nalog, klikom na link poslat na vas mail!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }, {
+                                navController.navigate(Screen.Loading.name)
+                            },{
+                                navController.navigateUp()
+                            })
+                        },
+                        modifier = Modifier
+                            .height(40.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text("Napravite nalog")
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            Spacer(modifier = Modifier.height(35.dp))
         }
     }
 }

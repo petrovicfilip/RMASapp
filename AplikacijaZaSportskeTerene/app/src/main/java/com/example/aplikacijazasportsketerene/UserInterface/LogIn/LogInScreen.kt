@@ -16,11 +16,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -75,64 +80,75 @@ fun LogInScreen(
                     )
             )
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    logInViewModel.updateEmail(it)
-                },
-                label = { Text("E-mail") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_email_24),
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = {
-                    logInViewModel.updatePassword(it)
-                },
-                label = { Text("Šifra") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_password_24),
-                        contentDescription = null
-                    )
-                },
-                trailingIcon = {
-                    val image = if (passwordVisible)
-                        painterResource(id = R.drawable.baseline_visibility_24)
-                    else
-                        painterResource(id = R.drawable.baseline_visibility_off_24)
-
-                    IconButton(onClick = {
-                        logInViewModel.togglePasswordVisibility()
-                    }) {
-                        Icon(painter = image, contentDescription = null)
-                    }
-                },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    logInViewModel.onSignInClick( {
-                        navController.popBackStack(Screen.LogIn.name, inclusive = true)
-                        navController.navigate(Screen.Home.name)
-                    },{
-                        navController.navigate(Screen.Loading.name)
-                    },{
-                        navController.popBackStack(Screen.Loading.name, inclusive = true)
-                    })
-                },
-                modifier = Modifier.fillMaxWidth()
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    //.padding(8.dp),
+                ,colors = CardColors(containerColor = CardDefaults.cardColors().containerColor,
+                    contentColor = Color.Black, disabledContentColor = MaterialTheme.colorScheme.primary, disabledContainerColor = Color.Gray
+                ),
+                elevation = CardDefaults.cardElevation(8.dp),
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Prijavite se")
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {
+                        logInViewModel.updateEmail(it)
+                    },
+                    label = { Text("E-mail") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_email_24),
+                            contentDescription = null
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(8.dp)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = {
+                        logInViewModel.updatePassword(it)
+                    },
+                    label = { Text("Šifra") },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_password_24),
+                            contentDescription = null
+                        )
+                    },
+                    trailingIcon = {
+                        val image = if (passwordVisible)
+                            painterResource(id = R.drawable.baseline_visibility_24)
+                        else
+                            painterResource(id = R.drawable.baseline_visibility_off_24)
+
+                        IconButton(onClick = {
+                            logInViewModel.togglePasswordVisibility()
+                        }) {
+                            Icon(painter = image, contentDescription = null)
+                        }
+                    },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(autoCorrect = false)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        logInViewModel.onSignInClick({
+                            navController.popBackStack(Screen.LogIn.name, inclusive = true)
+                            navController.navigate(Screen.Home.name)
+                        }, {
+                            navController.navigate(Screen.Loading.name)
+                        }, {
+                            navController.popBackStack(Screen.Loading.name, inclusive = true)
+                        })
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(8.dp)
+                ) {
+                    Text("Prijavite se")
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             TextButton(
