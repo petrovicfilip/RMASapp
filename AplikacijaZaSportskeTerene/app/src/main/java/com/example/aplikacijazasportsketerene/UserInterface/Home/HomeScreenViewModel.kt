@@ -1,6 +1,5 @@
 package com.example.aplikacijazasportsketerene.UserInterface.Home
 
-import android.location.Location
 import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.DataClasses.Court
 import com.example.aplikacijazasportsketerene.DataClasses.User
-import com.example.aplikacijazasportsketerene.Location.CurrentUserLocation
 import com.example.aplikacijazasportsketerene.Services.DatastoreService
 import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
 import com.example.aplikacijazasportsketerene.SingletonViewModel
@@ -21,7 +19,8 @@ class HomeScreenViewModel private constructor(): ViewModel(){
     val courts = mutableStateListOf<Court>()
     var selectedUser = mutableStateOf<User?>(null)
     val selectedUserProfilePicture = mutableStateOf<Uri?>(null)
-
+    val showButtonForUsers = mutableStateOf(false)
+    val selectedMarkerForUser =  mutableStateOf<Court?>(null)
     companion object : SingletonViewModel<HomeScreenViewModel>(){
         fun getInstance() = getInstance(HomeScreenViewModel::class.java) { HomeScreenViewModel() }
     }

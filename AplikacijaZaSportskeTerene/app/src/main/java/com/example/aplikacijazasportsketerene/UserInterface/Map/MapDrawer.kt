@@ -2,40 +2,22 @@ package com.example.aplikacijazasportsketerene.UserInterface.Map
 
 import android.annotation.SuppressLint
 import android.util.Log
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.aplikacijazasportsketerene.DataClasses.Court
@@ -69,8 +51,8 @@ fun MapDrawer(
 
 
     val markersState = remember { mutableStateOf<List<Court>>(listOf()) }
-    val selectedMarker = remember { mutableStateOf<Court?>(null) }
-    val showButton = remember { mutableStateOf(false) }
+    //val selectedMarkerForUser = remember { mutableStateOf<Court?>(null) }
+    //val showButtonForUsers = remember { mutableStateOf(false) }
 
 
     val currentLocation = locationUpdates.value
@@ -93,10 +75,10 @@ fun MapDrawer(
                 Log.d("MapDrawer", "Long click detected at: $latLng") // Log za debug
                 onNavigateToAddCourt(latLng)
                 temporaryMarker = latLng
-                showButton.value = false
+                homeScreenViewModel.showButtonForUsers.value = false
             },
             onMapClick = {
-                showButton.value = false
+                homeScreenViewModel.showButtonForUsers.value = false
                 homeScreenViewModel.selectedUser.value = null
             }
         ) {
@@ -127,7 +109,7 @@ fun MapDrawer(
                                     onClick = {
                                         if (it.isInfoWindowShown)
                                             it.showInfoWindow()
-                                        showButton.value = false
+                                        homeScreenViewModel.showButtonForUsers.value = false
                                         homeScreenViewModel.selectedUser.value = user
                                         homeScreenViewModel.getSelectedUsersProfilePicture(user.id)
                                         false
@@ -152,21 +134,21 @@ fun MapDrawer(
                             homeScreenViewModel.selectedUser.value = null
                             if (marker.isInfoWindowShown)
                                 marker.showInfoWindow()
-                            showButton.value = false
+                            homeScreenViewModel.showButtonForUsers.value = false
                             val selectedCourt =
                                 homeScreenViewModel.courts.find { it.name == marker.title }
-                            selectedMarker.value = selectedCourt
-                            showButton.value = true
+                            homeScreenViewModel.selectedMarkerForUser.value = selectedCourt
+                            homeScreenViewModel.showButtonForUsers.value = true
                             false
                         }
                     )
                 }
             }
         }
-        if (showButton.value) {
+       /* if (homeScreenViewModel.showButtonForUsers.value) {
             Button(
                 onClick = {
-                    selectedMarker.value?.let { court ->
+                    homeScreenViewModel.selectedMarkerForUser.value?.let { court ->
                         val courtJson = Gson().toJson(court)
                         navController.navigate("${Screen.Court.name}/$courtJson")
                     }
@@ -177,6 +159,6 @@ fun MapDrawer(
             ) {
                 Text("Pogledaj detalje")
             }
-        }
+        }*/
     }
 }

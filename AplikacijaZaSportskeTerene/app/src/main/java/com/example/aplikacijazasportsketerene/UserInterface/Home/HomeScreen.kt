@@ -4,18 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,39 +32,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import com.example.aplikacijazasportsketerene.Location.CurrentUserLocation
-import com.example.aplikacijazasportsketerene.Location.PersistedNearbyUsers
-import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.Screen
-import com.example.aplikacijazasportsketerene.Services.AccountService
 import com.example.aplikacijazasportsketerene.UserInterface.AddCourt.AddCourtViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.Map.MapDrawer
 import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import com.google.gson.Gson
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "MutableCollectionMutableState")
 @Composable
@@ -124,6 +99,21 @@ fun HomePage(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
             ) {
+                if (homeScreenViewModel.showButtonForUsers.value) {
+                    Button(
+                        onClick = {
+                            homeScreenViewModel.selectedMarkerForUser.value?.let { court ->
+                                val courtJson = Gson().toJson(court)
+                                navController.navigate("${Screen.Court.name}/$courtJson")
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text("Pogledaj detalje")
+                    }
+                }
                 if (homeScreenViewModel.selectedUser.value != null) {
                     val user = homeScreenViewModel.selectedUser.value!!
                     Card(
