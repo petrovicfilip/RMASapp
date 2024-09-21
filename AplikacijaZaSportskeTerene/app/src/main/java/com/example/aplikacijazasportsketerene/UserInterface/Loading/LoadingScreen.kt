@@ -37,6 +37,7 @@ fun LoadingScreen(
                     loadingScreenViewModel.uploadingCourtPictures.value -> "Upload-ovanje slika terena..."
                     loadingScreenViewModel.loggingIn.value -> "Logovanje..."
                     loadingScreenViewModel.uploadingCourtBasicInfo.value -> "Uploadovanje terena..."
+                    loadingScreenViewModel.signingOut.value -> "Odjavljivanje..."
                     else -> "..."
                 }
             )

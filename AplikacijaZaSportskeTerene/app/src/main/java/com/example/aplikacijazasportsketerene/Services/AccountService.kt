@@ -17,6 +17,9 @@ class AccountService {
         }
     }
 
+
+
+
     private val firebaseDB = FirebaseDBService.getClassInstance()
 
     val currentUserId: String

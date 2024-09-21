@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,7 +29,9 @@ import com.example.aplikacijazasportsketerene.UserInterface.Home.HomeScreenViewM
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.gson.Gson
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -39,7 +42,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun MapDrawer(
-    mapViewModel: MapDrawerViewModel = MapDrawerViewModel.getClassInstance(),
+    mapViewModel: MapDrawerViewModel = MapDrawerViewModel.getInstance(),
     onNavigateToAddCourt: (LatLng) -> Unit,
     homeScreenViewModel: HomeScreenViewModel = HomeScreenViewModel.getInstance(),
     navController: NavController
@@ -60,6 +63,14 @@ fun MapDrawer(
         position = CameraPosition.fromLatLngZoom(
             LatLng(currentLocation?.latitude ?: 0.0, currentLocation?.longitude ?: 0.0), 15f
         )
+    }
+
+    LaunchedEffect(currentLocation) {
+        currentLocation?.let {
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                LatLng(it.latitude, it.longitude), 15f
+            )
+        }
     }
 
     Column(
@@ -120,15 +131,15 @@ fun MapDrawer(
                     }
                 }
 
-                homeScreenViewModel.courts.forEach { it ->
+                homeScreenViewModel.courts.forEach { court ->
                     Marker(
                         state = MarkerState(
                             position = LatLng(
-                                it.latLon.latitude,
-                                it.latLon.longitude
+                                court.latLon.latitude,
+                                court.latLon.longitude
                             )
                         ),
-                        title = it.name,
+                        title = court.name,
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN),
                         onClick = { marker ->
                             homeScreenViewModel.selectedUser.value = null

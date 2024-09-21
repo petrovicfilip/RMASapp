@@ -51,7 +51,7 @@ import com.example.aplikacijazasportsketerene.Screen
 fun LogInScreen(
     navController: NavController,
     context: Context,
-    logInViewModel: LogInViewModel = LogInViewModel.getClassInstance(context)
+    logInViewModel: LogInViewModel = LogInViewModel.getInstance(context)
 ) {
     val email by logInViewModel.email.collectAsState()
     val password by logInViewModel.password.collectAsState()

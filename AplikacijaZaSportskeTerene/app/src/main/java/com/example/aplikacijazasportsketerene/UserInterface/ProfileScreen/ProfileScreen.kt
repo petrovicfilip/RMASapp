@@ -56,6 +56,8 @@ import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.R
 import com.example.aplikacijazasportsketerene.Screen
 import com.example.aplikacijazasportsketerene.Services.AccountService
+import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreenViewModel
+import com.example.aplikacijazasportsketerene.UserInterface.LogIn.LogInViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -64,10 +66,10 @@ import com.google.firebase.auth.auth
 @Composable
 fun ProfilePage(
     navController: NavController,
-    context: Context?,
+    context: Context,
     navigationBar: NavigationBar,
     ) {
-    val profileViewModel = ProfileViewModel.getClassInstance()
+    val profileViewModel = ProfileViewModel.getInstance()
 
     LaunchedEffect(Unit) {
         profileViewModel.loadUserData()
@@ -334,13 +336,12 @@ fun ProfilePage(
                     Row(
                         modifier = Modifier
                             .padding(16.dp)
-                            .fillMaxWidth()
-                            ,
+                            .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_sports_basketball_24),
-                                contentDescription = "Sakupljeni poeni",
+                                contentDescription = "Postavljeni tereni",
                                 modifier = Modifier.size(24.dp)
                             )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -348,10 +349,6 @@ fun ProfilePage(
                             Text(
                                 text = "Postavljeni tereni",
                                 style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = profileViewModel.points.doubleValue.toString(),
-                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
@@ -392,9 +389,16 @@ fun ProfilePage(
                 Button(
                     modifier = Modifier.padding(5.dp),
                     onClick = {
-                        navController.popBackStack(Screen.Home.name, inclusive = true)
-                        navController.navigate(Screen.LogIn.name)
-                        AccountService.getClassInstance().signOut()
+                        profileViewModel.signOut(onSignOutProgress = {
+                            LoadingScreenViewModel.getInstance().signingOut.value = true
+                            navController.navigate(Screen.Loading.name)
+                        },  onSignedOut = {
+                            LoadingScreenViewModel.getInstance().signingOut.value = false
+                            LogInViewModel.getInstance(context).email.value = ""
+                            LogInViewModel.getInstance(context).password.value = ""
+                            navController.popBackStack(Screen.Home.name, inclusive = true)
+                            navController.navigate(Screen.LogIn.name)
+                        })
                 }) {
                     Text(text = "Odjavi se")
                 }

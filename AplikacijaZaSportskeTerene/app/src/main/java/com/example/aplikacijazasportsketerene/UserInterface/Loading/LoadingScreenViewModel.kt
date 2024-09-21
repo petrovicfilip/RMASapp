@@ -15,5 +15,5 @@ class LoadingScreenViewModel private constructor() : ViewModel() {
     val loggingIn = mutableStateOf(false)
     val uploadingProfilePicture = mutableStateOf(false)
     val uploadingCourtPictures = mutableStateOf(false)
-
+    val signingOut = mutableStateOf(false)
 }

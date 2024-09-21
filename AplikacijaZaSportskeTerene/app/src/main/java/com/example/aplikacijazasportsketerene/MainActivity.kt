@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -46,6 +47,7 @@ import com.example.aplikacijazasportsketerene.UserInterface.UsersLeaderboard.Use
 import com.example.aplikacijazasportsketerene.UserInterface.UsersProfile.UsersProfileScreen
 import com.example.aplikacijazasportsketerene.ui.theme.AplikacijaZaSportskeTereneTheme
 import com.google.gson.Gson
+import kotlinx.coroutines.delay
 
 
 class MainActivity : ComponentActivity() {
@@ -54,8 +56,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val permissions = PermissionService(activity = this)
-        permissions.getNotificationPermissions()
-        permissions.getLocationPermissions()
+        permissions.getLocationAndNotificationsPermissions()
 
         enableEdgeToEdge()
         setContent {
@@ -73,10 +74,13 @@ class MainActivity : ComponentActivity() {
 
                 }
                 // POMERITI NA ODGOVARAJUCA MESTA BALGOVREMENO...
-                Intent(applicationContext, LocationService::class.java).apply {
-                    action = LocationService.ACTION_START
-                    startService(this)
-                }
+                /*LaunchedEffect(true){
+                    delay(20000)
+                    Intent(applicationContext, LocationService::class.java).apply {
+                        action = LocationService.ACTION_START
+                        startService(this)
+                    }
+                }*/
                 Intent(applicationContext, UsersService::class.java).apply {
                     action = UsersService.ACTION_START
                     startService(this)

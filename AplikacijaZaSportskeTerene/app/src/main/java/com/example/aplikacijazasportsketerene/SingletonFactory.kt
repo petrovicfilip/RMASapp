@@ -1,6 +1,7 @@
 package com.example.aplikacijazasportsketerene
 
 import androidx.lifecycle.ViewModel
+import com.example.aplikacijazasportsketerene.UserInterface.LogIn.LogInViewModel
 
 abstract class SingletonViewModel<T : ViewModel> {
     companion object {
@@ -18,11 +19,15 @@ abstract class SingletonViewModel<T : ViewModel> {
             } as T
         }
 
+        // radi kako treba...
         fun reset() {
             synchronized(instances) {
-                instances.clear()
+                instances.entries.removeIf { entry ->
+                    entry.key != LogInViewModel::class.java
+                }
             }
         }
+
 
         fun <T : ViewModel> resetInstance(clazz: Class<T>) {
             synchronized(instances) {

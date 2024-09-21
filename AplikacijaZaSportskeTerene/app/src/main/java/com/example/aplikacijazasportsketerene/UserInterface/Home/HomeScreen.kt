@@ -2,6 +2,7 @@ package com.example.aplikacijazasportsketerene.UserInterface.Home
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -40,11 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.aplikacijazasportsketerene.Location.LocationService
 import com.example.aplikacijazasportsketerene.Screen
 import com.example.aplikacijazasportsketerene.UserInterface.AddCourt.AddCourtViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.Map.MapDrawer
 import com.example.aplikacijazasportsketerene.UserInterface.NavBar.NavigationBar
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "MutableCollectionMutableState")
 @Composable
@@ -54,8 +59,13 @@ fun HomePage(
     navigationBar: NavigationBar,
     homeScreenViewModel: HomeScreenViewModel = HomeScreenViewModel.getInstance()
 ) {
-    LaunchedEffect(Unit) {
-
+    LaunchedEffect(true) {
+        withContext(Dispatchers.IO){
+            Intent(applicationContext, LocationService::class.java).apply {
+                action = LocationService.ACTION_START
+                applicationContext.startService(this)
+            }
+        }
     }
     Scaffold(
         bottomBar = { navigationBar.Draw(currentScreen = Screen.Home.name) },
@@ -137,7 +147,10 @@ fun HomePage(
                                         .size(75.dp)
                                         .clip(CircleShape)
                                         .border(
-                                            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                                            border = BorderStroke(
+                                                2.dp,
+                                                MaterialTheme.colorScheme.primary
+                                            ),
                                             shape = CircleShape
                                         ),
                                     contentScale = ContentScale.Crop,

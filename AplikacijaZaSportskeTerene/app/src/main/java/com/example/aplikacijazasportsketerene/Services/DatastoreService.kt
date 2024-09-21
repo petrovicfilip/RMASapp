@@ -1,15 +1,25 @@
 package com.example.aplikacijazasportsketerene.Services
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
+import androidx.core.location.LocationRequestCompat.Quality
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseError
 import com.google.firebase.FirebaseException
 import com.google.firebase.storage.storage
 import com.google.firebase.storage.storageMetadata
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.net.URI
 
 class DatastoreService private constructor() {
 
@@ -30,10 +40,32 @@ class DatastoreService private constructor() {
     }
 
 
-    suspend fun uploadProfilePicture(userId: String, uri: Uri) {
+    suspend fun uploadProfilePicture(userId: String, uri: Uri, context: Context) {
         val img = datastore.child("users").child(userId).child("profilePicture").child("profilePicture.jpg")
 
-        img.putFile(uri,imgMetadata).await()
+        val job1 = img.putFile(uri,imgMetadata)
+        val job2 = CoroutineScope(Dispatchers.IO).async{
+            uploadCompressedProfilePicture(userId, compressImage(uri, context))
+        }
+
+        job1.await()
+        job2.join()
+    }
+
+    fun compressImage(uri: Uri, context: Context, quality: Int = 50): ByteArray{
+        val inputStream = context.contentResolver.openInputStream(uri)
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG,quality,outputStream)
+
+        return outputStream.toByteArray()
+    }
+
+    suspend fun uploadCompressedProfilePicture(userId: String, byteArray: ByteArray){
+        val img = datastore.child("users").child(userId).child("profilePicture").child("compressed_profilePicture.jpg")
+
+        img.putBytes(byteArray).await()
     }
 
     suspend fun downloadProfilePicture(userId: String) : Uri? {
@@ -47,7 +79,6 @@ class DatastoreService private constructor() {
             return uri
         }
         catch (ex: FirebaseException){
-            Log.d("MUNEM","OPREM DOBRO")
             return null
         }
     }

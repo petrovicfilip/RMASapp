@@ -22,6 +22,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -93,10 +94,20 @@ class UsersService : Service() {
         nearbyUsersChannel.description = "Kanal za obavestenja o korisnicima u blizini"
         notificationManager.createNotificationChannel(nearbyUsersChannel)
 
+        val resultIntent = Intent(this@UsersService, MainActivity::class.java)
+        val stackBuilder = TaskStackBuilder.create(this@UsersService)
+        stackBuilder.addNextIntentWithParentStack(resultIntent)
+
+        val resultPendingIntent = stackBuilder.getPendingIntent(
+            0,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = NotificationCompat.Builder(this, LocationService.NEARBY_USERS_CHANNEL_ID)
             .setContentTitle("Pracenje bliskih korisnika...")
             .setSmallIcon(android.R.drawable.ic_dialog_map)
             .setOngoing(true)
+            .setContentIntent(resultPendingIntent)
             //.setContentIntent(resultPendingIntent)  // Ensures app opens when clicked
             .build()
         // ...

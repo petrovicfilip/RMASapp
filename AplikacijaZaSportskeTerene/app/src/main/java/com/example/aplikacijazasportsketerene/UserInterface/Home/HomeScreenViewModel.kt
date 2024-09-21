@@ -25,26 +25,25 @@ class HomeScreenViewModel private constructor(): ViewModel(){
         fun getInstance() = getInstance(HomeScreenViewModel::class.java) { HomeScreenViewModel() }
     }
 
-    fun getCourts(){
+    fun getCourts() {
         viewModelScope.launch(Dispatchers.IO) {
             val newCourts = FirebaseDBService.getClassInstance().getAllCourts()
-            newCourts.forEach{ court ->
+            val currentCourts = courts.toList() //
+            newCourts.forEach { court ->
                 var alreadyContained = false
-                courts.forEach {
-                    if(it.id == court.id)
+                currentCourts.forEach {
+                    if (it.id == court.id)
                         alreadyContained = true
                 }
-                if(!alreadyContained)
-                    withContext(Dispatchers.Main){
+                if (!alreadyContained) {
+                    withContext(Dispatchers.Main) {
                         courts.add(court)
                     }
-               /* Location("first").apply{
-                    latitude = CurrentUserLocation.getClassInstance().location.value!!.latitude
-                    longitude = CurrentUserLocation.getClassInstance().location.value!!.latitude
-                }.distanceTo()*/
+                }
             }
         }
     }
+
 
     fun getSelectedUsersProfilePicture(userId: String){
         viewModelScope.launch(Dispatchers.IO) {

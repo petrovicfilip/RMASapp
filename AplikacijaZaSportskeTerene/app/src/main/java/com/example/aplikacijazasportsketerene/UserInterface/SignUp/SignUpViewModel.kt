@@ -11,7 +11,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.AccountService
 import com.example.aplikacijazasportsketerene.Services.DatastoreService
 import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
+import com.example.aplikacijazasportsketerene.SingletonViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreenViewModel
+import com.example.aplikacijazasportsketerene.UserInterface.Splash.SplashScreenViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthEmailException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -28,7 +30,7 @@ class SignUpViewModel private constructor(
     context: Context
 ) : ViewModel() {
 
-    companion object {
+    /*companion object {
         var instance: SignUpViewModel? = null
 
         fun getClassInstance(context: Context): SignUpViewModel {
@@ -36,9 +38,15 @@ class SignUpViewModel private constructor(
                 return instance ?: SignUpViewModel(accountService = AccountService.getClassInstance(),context).also { instance = it }
             }
         }
+    }*/
+
+    companion object : SingletonViewModel<SignUpViewModel>() {
+        fun getInstance(context: Context) : SignUpViewModel = getInstance(SignUpViewModel::class.java) {
+            SignUpViewModel(accountService = AccountService.getClassInstance() ,context)
+        }
     }
 
-    val passwordPattern = "^(?=.*[A-Z])(?=.*[!@#\$%^&*(),.?\":{}|<>]).{10,}$".toRegex()
+    private val passwordPattern = "^(?=.*[A-Z])(?=.*[!@#\$%^&*(),.?\":{}|<>]).{10,}$".toRegex()
 
     val firstName = MutableStateFlow("")
     val lastName = MutableStateFlow("")
@@ -116,8 +124,8 @@ class SignUpViewModel private constructor(
             LoadingScreenViewModel.getInstance().makingAccount.value = false
             if (profilePicture != null) {
                 LoadingScreenViewModel.getInstance().uploadingProfilePicture.value = true
-                    DatastoreService.getClassInstance()
-                        .uploadProfilePicture(Firebase.auth.currentUser!!.uid, profilePicture!!)
+                DatastoreService.getClassInstance()
+                    .uploadProfilePicture(Firebase.auth.currentUser!!.uid, profilePicture!!,context = appContext)
                 LoadingScreenViewModel.getInstance().uploadingProfilePicture.value = false
                 // TODO else { ... }
             }

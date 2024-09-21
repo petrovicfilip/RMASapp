@@ -9,8 +9,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.DataClasses.User
+import com.example.aplikacijazasportsketerene.Services.AccountService
 import com.example.aplikacijazasportsketerene.Services.DatastoreService
 import com.example.aplikacijazasportsketerene.Services.FirebaseDBService
+import com.example.aplikacijazasportsketerene.SingletonViewModel
+import com.example.aplikacijazasportsketerene.UserInterface.Splash.SplashScreenViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
@@ -18,15 +21,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ProfileViewModel private constructor(): ViewModel() {
-
-    companion object{
-        var instance: ProfileViewModel? = null
-
-        fun getClassInstance(): ProfileViewModel {
-            return instance ?: synchronized(this) {
-                return instance ?: ProfileViewModel().also { instance = it }
-            }
-        }
+    companion object : SingletonViewModel<ProfileViewModel>() {
+        fun getInstance() : ProfileViewModel = getInstance(ProfileViewModel::class.java) { ProfileViewModel() }
     }
 
     var profilePicture by mutableStateOf<Uri?>(null)
@@ -57,12 +53,21 @@ class ProfileViewModel private constructor(): ViewModel() {
 
     fun getUserProfilePicture(){
         viewModelScope.launch(Dispatchers.IO) {
-            val uri = DatastoreService.getClassInstance().downloadProfilePicture(Firebase.auth.currentUser!!.uid)
-            if (uri != null)
-            withContext(Dispatchers.Main){
-                profilePicture = uri
+            val uri = Firebase.auth.currentUser?.let {
+                DatastoreService.getClassInstance().downloadProfilePicture(
+                    it.uid)
             }
+            if (uri != null)
+                withContext(Dispatchers.Main){
+                    profilePicture = uri
+                }
+            return@launch
         }
     }
-
+    fun signOut(onSignOutProgress: () -> Unit, onSignedOut: () -> Unit){
+        onSignOutProgress()
+        AccountService.getClassInstance().signOut()
+        SingletonViewModel.reset()
+        onSignedOut()
+    }
 }

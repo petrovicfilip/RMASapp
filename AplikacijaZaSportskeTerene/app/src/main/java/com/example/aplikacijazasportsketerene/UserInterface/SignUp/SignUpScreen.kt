@@ -62,7 +62,7 @@ import com.example.aplikacijazasportsketerene.Screen
 fun SignUpScreen(
     navController: NavController,
     context: Context,
-    signUpViewModel: SignUpViewModel = SignUpViewModel.getClassInstance(context)
+    signUpViewModel: SignUpViewModel = SignUpViewModel.getInstance(context)
 ) {
     val firstName by signUpViewModel.firstName.collectAsState()
     val lastName by signUpViewModel.lastName.collectAsState()

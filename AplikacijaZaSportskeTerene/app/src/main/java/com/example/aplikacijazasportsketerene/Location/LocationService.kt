@@ -88,7 +88,7 @@ class LocationService: Service() {
                 val geopoint = GeoPoint(location.latitude, location.longitude)
                 val currentUserId = Firebase.auth.currentUser?.uid
                 if(currentUserId != null) {
-                    GlobalScope.launch(Dispatchers.IO) {
+                    serviceScope.launch(Dispatchers.IO) {
                         FirebaseDBService.getClassInstance().updateUserLocation(
                             currentUserId,
                             geopoint

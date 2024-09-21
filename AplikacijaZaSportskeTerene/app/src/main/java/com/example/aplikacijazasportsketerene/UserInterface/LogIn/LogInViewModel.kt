@@ -5,7 +5,9 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aplikacijazasportsketerene.Services.AccountService
+import com.example.aplikacijazasportsketerene.SingletonViewModel
 import com.example.aplikacijazasportsketerene.UserInterface.Loading.LoadingScreenViewModel
+import com.example.aplikacijazasportsketerene.UserInterface.SignUp.SignUpViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +21,7 @@ class LogInViewModel private constructor(
     context: Context
 ) : ViewModel() {
 
-    companion object{
+    /*companion object{
         var instance : LogInViewModel? = null
 
         fun getClassInstance(context: Context) : LogInViewModel {
@@ -27,6 +29,12 @@ class LogInViewModel private constructor(
             return instance ?: synchronized(this) {
                 return instance ?: LogInViewModel(accountService = AccountService.getClassInstance(), context).also { instance = it }
             }
+        }
+    }*/
+
+    companion object : SingletonViewModel<LogInViewModel>() {
+        fun getInstance(context: Context) : LogInViewModel = getInstance(LogInViewModel::class.java) {
+            LogInViewModel(accountService = AccountService.getClassInstance(), context)
         }
     }
 
