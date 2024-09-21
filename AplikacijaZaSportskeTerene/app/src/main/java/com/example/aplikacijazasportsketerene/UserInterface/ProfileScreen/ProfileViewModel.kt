@@ -25,8 +25,9 @@ class ProfileViewModel private constructor(): ViewModel() {
         fun getInstance() : ProfileViewModel = getInstance(ProfileViewModel::class.java) { ProfileViewModel() }
     }
 
-    var profilePicture by mutableStateOf<Uri?>(null)
+    var profilePicture by mutableStateOf<Uri?>(Uri.Builder().path("").build())
     val findingCourtsStarted = mutableStateOf(false)
+    val loadingProfilePicture = mutableStateOf(false)
     //val user = mutableStateOf(User()) //REFAKTORISATI
 
     val username = mutableStateOf("")
@@ -55,13 +56,18 @@ class ProfileViewModel private constructor(): ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val uri = Firebase.auth.currentUser?.let {
                 DatastoreService.getClassInstance().downloadProfilePicture(
-                    it.uid)
+                    it.uid) {
+                    profilePicture = Uri.Builder()
+                        .path("")
+                        .build()
+                    loadingProfilePicture.value = false
+                }
             }
             if (uri != null)
                 withContext(Dispatchers.Main){
                     profilePicture = uri
+                    loadingProfilePicture.value = false
                 }
-            return@launch
         }
     }
     fun signOut(onSignOutProgress: () -> Unit, onSignedOut: () -> Unit){

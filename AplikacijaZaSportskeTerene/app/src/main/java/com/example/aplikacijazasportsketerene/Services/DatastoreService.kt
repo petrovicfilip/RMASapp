@@ -10,6 +10,7 @@ import androidx.core.location.LocationRequestCompat.Quality
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseError
 import com.google.firebase.FirebaseException
+import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.storage
 import com.google.firebase.storage.storageMetadata
 import kotlinx.coroutines.CoroutineScope
@@ -68,7 +69,7 @@ class DatastoreService private constructor() {
         img.putBytes(byteArray).await()
     }
 
-    suspend fun downloadProfilePicture(userId: String) : Uri? {
+    suspend fun downloadProfilePicture(userId: String, onRetrievalFailuere: () -> Unit) : Uri? {
         val img = datastore.child("users").child(userId).child("profilePicture").child("profilePicture.jpg")
 
         try{
@@ -78,6 +79,25 @@ class DatastoreService private constructor() {
 //            }
             return uri
         }
+
+        catch (e: StorageException) {
+            when (e.errorCode) {
+                -13010 -> {
+                    Log.e("StorageError", "Objekat ne postoji na navedenoj lokaciji: ${e.message}")
+                    withContext(Dispatchers.Main) { onRetrievalFailuere()
+                    }
+                    return null
+                }
+                else -> {
+                    Log.e("StorageError", "Greška prilikom pristupa: ${e.message}")
+                    withContext(Dispatchers.Main){
+                        onRetrievalFailuere()
+                    }
+                    return null
+                }
+            }
+        }
+
         catch (ex: FirebaseException){
             return null
         }

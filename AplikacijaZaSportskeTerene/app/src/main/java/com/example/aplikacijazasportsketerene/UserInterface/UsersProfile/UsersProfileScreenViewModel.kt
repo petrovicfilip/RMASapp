@@ -22,8 +22,9 @@ class UsersProfileScreenViewModel : ViewModel() {
     /*companion object : SingletonViewModel<UsersProfileScreenViewModel>(){
         fun getInstance() = Companion.getInstance(UsersProfileScreenViewModel::class.java){ UsersProfileScreenViewModel() }
     }*/
-    var profilePicture by mutableStateOf<Uri?>(null)
+    var profilePicture by mutableStateOf<Uri>(Uri.Builder().path("").build())
     val findingCourtsStarted = mutableStateOf(false)
+    val loadingProfilePicture = mutableStateOf(false)
     //val user = mutableStateOf(User()) //REFAKTORISATI
 
     val username = mutableStateOf("")
@@ -48,12 +49,17 @@ class UsersProfileScreenViewModel : ViewModel() {
         }
     }
 
-    fun getUserProfilePicture(userId: String){
+    fun getUserProfilePicture(userId: String) {
+        loadingProfilePicture.value = true
         viewModelScope.launch(Dispatchers.IO) {
-            val uri = DatastoreService.getClassInstance().downloadProfilePicture(userId)
+            val uri = DatastoreService.getClassInstance().downloadProfilePicture(userId){
+                profilePicture = Uri.Builder().path("").build()
+                loadingProfilePicture.value = false
+            }
             if (uri != null)
                 withContext(Dispatchers.Main){
                     profilePicture = uri
+                    loadingProfilePicture.value = false
                 }
         }
     }

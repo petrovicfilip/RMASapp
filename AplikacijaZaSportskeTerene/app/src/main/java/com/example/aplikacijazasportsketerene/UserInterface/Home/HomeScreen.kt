@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
@@ -137,9 +138,11 @@ fun HomePage(
                         Box(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
-                                .zIndex(1f) // Ensure the image is above other elements
+                                .zIndex(1f)
                         ){
-                            if (homeScreenViewModel.selectedUserProfilePicture.value != null) {
+                            if (homeScreenViewModel.loadingProfilePicture.value) {
+                                CircularProgressIndicator(modifier = Modifier.size(75.dp))
+                            } else if(homeScreenViewModel.selectedUserProfilePicture.value.path != "101")
                                 AsyncImage(
                                     model = homeScreenViewModel.selectedUserProfilePicture.value,
                                     contentDescription = null,
@@ -155,8 +158,8 @@ fun HomePage(
                                         ),
                                     contentScale = ContentScale.Crop,
                                 )
-                            } else
-                                CircularProgressIndicator(modifier = Modifier.size(75.dp))
+                            else
+                                Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Default slika", Modifier.size(75.dp).zIndex(1f))
                         }
                         Column(
                             modifier = Modifier

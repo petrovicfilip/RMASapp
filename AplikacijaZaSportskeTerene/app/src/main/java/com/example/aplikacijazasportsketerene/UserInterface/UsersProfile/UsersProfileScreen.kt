@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -75,7 +76,7 @@ fun UsersProfileScreen(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        if (usersProfileScreenViewModel.profilePicture == null)
+        if (usersProfileScreenViewModel.profilePicture.path == "")
             usersProfileScreenViewModel.getUserProfilePicture(userId)
         Spacer(modifier = Modifier.height(15.dp))
         Column(
@@ -105,7 +106,13 @@ fun UsersProfileScreen(
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
                     ) {
-                        if (usersProfileScreenViewModel.profilePicture != null) {
+                        if (usersProfileScreenViewModel.loadingProfilePicture.value) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .size(128.dp)
+                            )
+                        } else if(usersProfileScreenViewModel.profilePicture.path != "") {
                             Image(
                                 painter = rememberAsyncImagePainter(usersProfileScreenViewModel.profilePicture),
                                 contentDescription = null,
@@ -122,13 +129,9 @@ fun UsersProfileScreen(
                                     ),
                                 contentScale = ContentScale.Crop,
                             )
-                        } else {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .size(128.dp)
-                            )
                         }
+                        else
+                            Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Default slika", Modifier.size(128.dp))
                     }
                 }
             }

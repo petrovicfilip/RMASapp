@@ -3,6 +3,7 @@ package com.example.aplikacijazasportsketerene.UserInterface.ProfileScreen
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -25,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -80,8 +82,10 @@ fun ProfilePage(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        if (profileViewModel.profilePicture == null)
+        if (profileViewModel.profilePicture?.path == "") {
+            profileViewModel.loadingProfilePicture.value = true
             profileViewModel.getUserProfilePicture()
+        }
         Spacer(modifier = Modifier.height(15.dp))
         Column(
             Modifier
@@ -109,7 +113,12 @@ fun ProfilePage(
                     Box(modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                     ){
-                        if (profileViewModel.profilePicture != null) {
+                        if (profileViewModel.loadingProfilePicture.value) {
+                            CircularProgressIndicator(modifier = Modifier
+                                .padding(10.dp)
+                                .size(128.dp)
+                            )
+                        } else if(profileViewModel.profilePicture != null && profileViewModel.profilePicture!!.path != "") {
                             Image(
                                 painter = rememberAsyncImagePainter(profileViewModel.profilePicture),
                                 contentDescription = null,
@@ -126,12 +135,9 @@ fun ProfilePage(
                                     ),
                                 contentScale = ContentScale.Crop,
                             )
-                        } else {
-                            CircularProgressIndicator(modifier = Modifier
-                                .padding(10.dp)
-                                .size(128.dp)
-                            )
                         }
+                        else
+                            Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Default slika", Modifier.size(128.dp))
                     }
                 }
             }
