@@ -245,11 +245,38 @@ class CourtViewModel(
                     HomeScreenViewModel.getInstance().updateCourt(
                        court = court.value!!.copy(
                            rating = courtRating.intValue,
-                           ratedBy = courtRatedBy.intValue
+                           ratedBy = courtRatedBy.intValue,
+                           averageRating = (courtRating.intValue.toDouble() / courtRatedBy.intValue.toDouble())
                        )
                     )
                 }
             }
+        }
+    }
+
+    fun deleteReview(uid: String = Firebase.auth.currentUser!!.uid,
+                     cid: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            val review = FirebaseDBService.getClassInstance().getReview(uid,cid)
+            if(review != null)
+                FirebaseDBService.getClassInstance().removeReview(uid,cid)
+            withContext(Dispatchers.Main){
+                reviewChecker.value = false
+
+                if(review != null) {
+                    courtRating.intValue -= review.value
+                    HomeScreenViewModel.getInstance().updateCourt(
+                        court = court.value!!.copy(
+                            rating = courtRating.intValue,
+                            ratedBy = --courtRatedBy.intValue,
+                            averageRating = (courtRating.intValue.toDouble() / courtRatedBy.intValue.toDouble())
+                                    )
+                    )
+                }
+                myRating.intValue = 0;
+                postingReview.value = false
+            }
+
         }
     }
 

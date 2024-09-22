@@ -47,6 +47,7 @@ class FirebaseDBService private constructor() {
     val courtPosted = 1.0
     val foundCourtPoints = 2.0
     val courtLikedByAnotherUser = 3.0
+    //val commentPosted = 0.2
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -390,14 +391,14 @@ class FirebaseDBService private constructor() {
         try {
             val reviewRef = reviews
                 .whereEqualTo("userId", userId)
-                .whereEqualTo("eventId", courtId)
+                .whereEqualTo("courtId", courtId)
                 .get()
                 .await()
 
             if (reviewRef.isEmpty) {
                 val newReview = Review(
                     userId = userId,
-                    eventId = courtId,
+                    courtId = courtId,
                     value = value
                 )
                 reviews.add(newReview).await()
@@ -460,7 +461,7 @@ class FirebaseDBService private constructor() {
         try {
             val reviewRef = reviews
                 .whereEqualTo("userId", userId)
-                .whereEqualTo("eventId", courtId)
+                .whereEqualTo("courtId", courtId)
                 .get()
                 .await()
 
@@ -470,7 +471,25 @@ class FirebaseDBService private constructor() {
                 courts
                     .document(courtId)
                     .update("ratedBy",FieldValue.increment(-1),
-                        "rating",FieldValue.increment(valueToDecrement.toString().toLong()))
+                        "rating",FieldValue.increment(-valueToDecrement.toString().toLong()))
+
+                val court = courts
+                    .document(courtId)
+                    .get()
+                    .await()
+
+                val rating = court.get("rating").toString().toDouble()
+                val ratedBy = court.get("ratedBy").toString().toDouble()
+
+                if(ratedBy != 0.0)
+                    courts
+                        .document(courtId)
+                        .update("averageRating",rating / ratedBy)
+                        .await()
+                else
+                    courts
+                        .document(courtId)
+                        .update("averageRating",0.0)
 
                 val reviewDocument = reviewRef.documents[0]
                 reviews.document(reviewDocument.id).delete().await()
@@ -483,12 +502,12 @@ class FirebaseDBService private constructor() {
         }
     }
 
-    suspend fun getReview(userId: String, eventId: String): Review? {
+    suspend fun getReview(userId: String, courtId: String): Review? {
 
         try {
             val reviewRef = reviews
                 .whereEqualTo("userId", userId)
-                .whereEqualTo("eventId", eventId)
+                .whereEqualTo("courtId", courtId)
                 .get()
                 .await()
 
@@ -632,7 +651,9 @@ class FirebaseDBService private constructor() {
                 val userRef = users.document(court.userId!!)
                 val snapshot = transaction.get(userRef)
                 val currentPoints = snapshot.getLong("points") ?: 0L
-                transaction.update(userRef, "points", currentPoints + courtLikedByAnotherUser)
+                val courtPosterUserId = snapshot.getString("userId") ?: ""
+                if(courtPosterUserId != userId)
+                    transaction.update(userRef, "points", currentPoints + courtLikedByAnotherUser)
             }.await()
 
             return true
@@ -651,7 +672,9 @@ class FirebaseDBService private constructor() {
                 val userRef = users.document(court.userId!!)
                 val snapshot = transaction.get(userRef)
                 val currentPoints = snapshot.getLong("points") ?: 0L
-                transaction.update(userRef, "points", currentPoints - courtLikedByAnotherUser)
+                val courtPosterUserId = snapshot.getString("userId") ?: ""
+                if(courtPosterUserId != userId)
+                    transaction.update(userRef, "points", currentPoints - courtLikedByAnotherUser)
             }.await()
 
             return true

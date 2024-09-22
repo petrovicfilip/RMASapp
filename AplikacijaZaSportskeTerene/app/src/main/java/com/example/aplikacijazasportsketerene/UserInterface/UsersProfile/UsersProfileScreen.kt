@@ -359,7 +359,7 @@ fun UsersProfileScreen(
                     ) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_sports_basketball_24),
-                                contentDescription = "Sakupljeni poeni",
+                                contentDescription = "Postavljeni tereni",
                                 modifier = Modifier.size(24.dp)
                             )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -367,10 +367,6 @@ fun UsersProfileScreen(
                             Text(
                                 text = "Postavljeni tereni",
                                 style = MaterialTheme.typography.titleMedium
-                            )
-                            Text(
-                                text = usersProfileScreenViewModel.points.doubleValue.toString(),
-                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }

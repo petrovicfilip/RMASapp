@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
@@ -316,6 +317,16 @@ fun CourtDetails(
                                         style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                                     )
                                 }
+
+                                Spacer(modifier = Modifier.weight(1f))
+
+                                if(courtViewModel.reviewChecker.value)
+                                    IconButton(onClick = {
+                                        courtViewModel.postingReview.value = true
+                                        courtViewModel.deleteReview(cid = court.id!!)
+                                    }) {
+                                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Obrisi review")
+                                    }
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))

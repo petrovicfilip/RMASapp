@@ -4,7 +4,7 @@ import com.google.firebase.Timestamp
 
 data class Review(
     val userId: String = "",
-    val eventId: String = "",
+    val courtId: String = "",
     val value: Int = 0,
     val dateAdded: Timestamp = Timestamp.now()
 )
