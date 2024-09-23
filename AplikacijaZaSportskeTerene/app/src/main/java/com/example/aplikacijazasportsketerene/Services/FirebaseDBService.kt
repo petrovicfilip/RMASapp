@@ -174,7 +174,7 @@ class FirebaseDBService private constructor() {
         onComplete: (List<User>) -> Unit,
     ) {
 
-        val usersCollection = firestore.collection("users")
+        /*val usersCollection = firestore.collection("users")
 
         val docs = usersCollection.get().await()
         val nearbyUsers = mutableListOf<User>()
@@ -188,37 +188,34 @@ class FirebaseDBService private constructor() {
         // PROVERITI!!!!!!!!!!!!
         //CoroutineScope(Dispatchers.Main).launch {
             onComplete(nearbyUsers)
-        //}
+        //}*/
 
-//        val boundingBox = calculateBoundingBox(latitude, longitude, 50.0)
-//
-//        usersCollection
-//            .whereGreaterThanOrEqualTo("latitude", boundingBox.minLat)
-//            .whereLessThanOrEqualTo("latitude", boundingBox.maxLat)
-//            .whereGreaterThanOrEqualTo("longitude", boundingBox.minLon)
-//            .whereLessThanOrEqualTo("longitude", boundingBox.maxLon)
-//            .get()
-//            .addOnSuccessListener { documents ->
-//                val nearbyUsers = mutableListOf<User>()
-//
-//                for (document in documents) {
-//                    val userLat = document.getDouble("latitude") ?: continue
-//                    val userLon = document.getDouble("longitude") ?: continue
-//
-//                    val distance = haversine(latitude, longitude, userLat, userLon)
-//
-//                    if (distance <= 10000000) {
-//                        val user = document.toObject(User::class.java)
-//                        nearbyUsers.add(user)
-//                    }
-//                }
-//
-//                onComplete(nearbyUsers)
-//            }
-//            .addOnFailureListener { exception ->
-//                // Handle the error here
-//                onComplete(emptyList())
-//            }
+        val boundingBox = calculateBoundingBox(latitude, longitude, 50.0)
+
+        val documents = users
+            .whereGreaterThanOrEqualTo("latLon", GeoPoint(boundingBox.minLat, boundingBox.minLon))
+            .whereLessThanOrEqualTo("latLon", GeoPoint(boundingBox.maxLat, boundingBox.maxLon))
+            .get()
+            .await()
+        Log.d("NASAO", "NASAO ${documents.size()} korisnika!!!")
+        val nearbyUsers = mutableListOf<User>()
+
+        for (document in documents) {
+            val geoPoint = document.getGeoPoint("latLon") ?: continue
+            val userLat = geoPoint.latitude
+            val userLon = geoPoint.longitude
+
+            val distance = haversine(latitude, longitude, userLat, userLon)
+            Log.d("DISTANCA", "DISTANCA ${distance} metara!!!")
+
+            if (distance <= 50) {
+                val user = document.toObject(User::class.java)
+                if(user.id != auth.currentUser!!.uid)
+                    nearbyUsers.add(user)
+            }
+        }
+
+        onComplete(nearbyUsers)
     }
 
     suspend fun getUsersSortedByPoints(): List<User> {

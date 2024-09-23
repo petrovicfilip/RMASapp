@@ -325,7 +325,11 @@ fun CourtDetails(
                                         courtViewModel.postingReview.value = true
                                         courtViewModel.deleteReview(cid = court.id!!)
                                     }) {
-                                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Obrisi review")
+                                        Icon(imageVector =
+                                            Icons.Default.Clear,
+                                            contentDescription = "Obrisi review",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(12.dp))
                                     }
                             }
 

@@ -131,7 +131,7 @@ class CourtsService : Service() {
 
                 val nearbyUsersNotification = NotificationCompat.Builder(
                     applicationContext,
-                    LocationService.NEARBY_USERS_CHANNEL_ID
+                    NEARBY_COURTS_CHANNEL_ID
                 )
                     .setContentTitle("Otkrio si novi teren!")
                     .setContentText("Broj otkrivenih terena: $courtCount\n" + "Dobio si ${firebaseDBService.foundCourtPoints * courtCount} poena!")

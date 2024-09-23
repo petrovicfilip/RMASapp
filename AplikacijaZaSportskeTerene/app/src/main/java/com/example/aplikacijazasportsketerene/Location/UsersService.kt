@@ -129,16 +129,17 @@ class UsersService : Service() {
 
         FirebaseDBService.getClassInstance().findNearbyUsers(
             currentUserLocation.location.value!!.latitude,
-            currentUserLocation.location.value!!.latitude
+            currentUserLocation.location.value!!.longitude
         ) { nearbyUsers ->
 
             val newNearbyUsers =
                 PersistedNearbyUsers.getClassInstance().filterAndUpdateList(nearbyUsers)
             //val newNearbyUsers = nearbyUsers
-
+            Log.d("Nema","NEMA NOVIH KORISNIKA U BLIZINI")
+            Log.d("Nema","ovolko komada ${newNearbyUsers.size}")
             if (newNearbyUsers.isNotEmpty() && !isAppInForeground()) {
                 val userCount = newNearbyUsers.size
-
+                Log.d("Nema","NASAO SAM NOVE!!! $userCount")
 
                 val resultIntent = Intent(this@UsersService, MainActivity::class.java)
                 val stackBuilder = TaskStackBuilder.create(this@UsersService)

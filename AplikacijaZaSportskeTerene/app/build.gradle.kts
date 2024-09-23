@@ -93,14 +93,15 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.coil.compose)
 
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation (libs.androidx.lifecycle.viewmodel.compose.v286)
 
 
     // Maps SDK for Android
     implementation (libs.play.services.maps)
     implementation (libs.maps.compose)
 
-    implementation (libs.gson)
+    implementation(libs.gson)
+
 
 
 }

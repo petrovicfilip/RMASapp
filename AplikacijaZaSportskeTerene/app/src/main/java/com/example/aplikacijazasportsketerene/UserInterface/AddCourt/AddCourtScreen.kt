@@ -77,7 +77,7 @@ fun AddCourtScreen(
     //val isVisible by addCourtViewModel.isVisible
 
     // Za sada...
-    val courtTypes = listOf("Fudbalski", "Košarkaški", "Odbojkaški")
+    val courtTypes = listOf("Fudbalski", "Košarkaški", "Odbojkaški", "Teniski", "Golf", "Neodredjen")
 
     /*AnimatedVisibility(
         visible = isVisible,

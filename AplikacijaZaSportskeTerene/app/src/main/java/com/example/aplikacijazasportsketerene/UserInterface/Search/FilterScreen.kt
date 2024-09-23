@@ -87,7 +87,7 @@ fun FilterScreen(
                         painter = painterResource(R.drawable.baseline_sports_basketball_24), contentDescription = "Lopta" )
                 }
 
-                val courtTypes = listOf("Fudbalski", "Kosarkaski", "Odbojkaski", "Teniski", "Golf", "Neodredjen")
+                val courtTypes = listOf("Fudbalski", "Košarkaški", "Odbojkaški", "Teniski", "Golf", "Neodredjen")
                 courtTypes.forEach { type ->
                     var checked by remember { mutableStateOf(type in searchViewModel.selectedTypes) }
 

@@ -54,6 +54,7 @@ fun MapDrawer(
 
 
     val markersState = remember { mutableStateOf<List<Court>>(listOf()) }
+    var isCameraUpdated by remember { mutableStateOf(false) }
     //val selectedMarkerForUser = remember { mutableStateOf<Court?>(null) }
     //val showButtonForUsers = remember { mutableStateOf(false) }
 
@@ -67,9 +68,12 @@ fun MapDrawer(
 
     LaunchedEffect(currentLocation) {
         currentLocation?.let {
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                LatLng(it.latitude, it.longitude), 15f
-            )
+            if (!isCameraUpdated && it.latitude != 0.0 && it.longitude != 0.0) {
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                    LatLng(it.latitude, it.longitude), 15f
+                )
+                isCameraUpdated = true
+            }
         }
     }
 
